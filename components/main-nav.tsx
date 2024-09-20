@@ -14,49 +14,49 @@ export const MainNav = ({className, ...props}: React.HtmlHTMLAttributes<HTMLElem
 
     const routes = [
         {
-            href: `/${params.storeId}`,
+            href: `/`,
             label: "Overview",
-            active: pathname === `/${params.storeId}`,
+            active: pathname === `/`,
         },
         {
-            href: `/${params.storeId}/billboards`,
+            href: `/billboards`,
             label: "Billboards",
-            active: pathname === `/${params.storeId}/billboards`,
+            active: pathname === `/billboards`,
         },
         {
-            href: `/${params.storeId}/categories`,
+            href: `/categories`,
             label: "Categories",
-            active: pathname === `/${params.storeId}/categories`,
+            active: pathname === `/categories`,
         },
         {
-            href: `/${params.storeId}/industries`,
+            href: `/industries`,
             label: "Industries",
-            active: pathname === `/${params.storeId}/industries`,
+            active: pathname === `/industries`,
         },
         {
-            href: `/${params.storeId}/brands`,
+            href: `/brands`,
             label: "Brands",
-            active: pathname === `/${params.storeId}/brands`,
+            active: pathname === `/brands`,
         },
         {
-            href: `/${params.storeId}/models`,
+            href: `/models`,
             label: "Models",
-            active: pathname === `/${params.storeId}/models`,
+            active: pathname === `/models`,
         },
         {
-            href: `/${params.storeId}/products`,
+            href: `/products`,
             label: "Products",
-            active: pathname === `/${params.storeId}/products`,
+            active: pathname === `/products`,
         },
         {
-            href: `/${params.storeId}/orders`,
+            href: `/orders`,
             label: "Orders",
-            active: pathname === `/${params.storeId}/orders`,
+            active: pathname === `/orders`,
         },
         {
-            href: `/${params.storeId}/settings`,
+            href: `/settings`,
             label: "Settings",
-            active: pathname === `/${params.storeId}/settings`,
+            active: pathname === `/settings`,
         },
     ];
 

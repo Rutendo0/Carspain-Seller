@@ -1,13 +1,21 @@
 import { db } from "@/lib/firebase"
-import { Order } from "@/types-db"
+import { Order, Product } from "@/types-db"
 import { collection, doc, getDocs } from "firebase/firestore"
 
-export const getInventory = async (storeId: string) => {
-    const productsData = (
-        await getDocs(collection(doc(db, "stores", storeId), "products"))
-    );
+export const getInventory = async () => {
 
-    const total = productsData.size;
+    const storesSnapshot = await getDocs(collection(db, "stores"));
+    let allProducts :  Product[] = [];
+
+    for (const storeDoc of storesSnapshot.docs) {
+
+        const productsSnapshot = await getDocs(collection(storeDoc.ref, "products"));
+        productsSnapshot.forEach((productDoc) => {
+            allProducts.push(productDoc.data() as Product);
+        });
+    }
+
+    const total = allProducts.length;
 
     return total;
 }

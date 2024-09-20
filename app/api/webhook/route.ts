@@ -46,26 +46,38 @@ export const POST = async (req: Request) => {
 
     const addressString = addressComponents.filter((a) => a !== null).join(", ")
 
-    if(event.type === "checkout.session.completed") {
-        console.log(`Order Id:`, session?.metadata?.orderId);
-        if(session?.metadata?.storeId) {
-            await updateDoc(
-                doc(
-                    db,
-                    "stores",
-                    session?.metadata?.storeId,
-                    "orders",
-                    session?.metadata?.orderId
-                ), {
-                    isPaid: true,
-                    address: addressString,
-                    phone: session.customer_details?.phone,
-                    updatedAt: serverTimestamp()
+    if (event.type === "checkout.session.completed") {
+
+        if (session) {
+            const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+                expand: ['data.price.product'],
+            });
+
+            // Iterate through each line item
+            for (const item of lineItems.data) {
+                const storeId = item.price?.product.metadata.store_id;
+                const orderId = item.price?.product.metadata.order_id;
+                console.log(session)
+
+
+                if (storeId && orderId) {
+                    const storeRef = doc(db, "stores", storeId, "orders", orderId);
+                    await updateDoc(storeRef, {
+                        isPaid: true,
+                        address: `${session.customer_details?.address?.line1}, ${session.customer_details?.address?.line2}, ${session.customer_details?.address?.city}`,
+                        phone: session.customer_details?.phone,
+                        updatedAt: serverTimestamp(),
+                    });
+                } else {
+                    console.error("Missing store ID or order ID in line item metadata.");
                 }
-            )
+            }
         }
     }
+    
 
     return new NextResponse(null, {status: 200})
 
 }
+
+//Products should be paid for at once, but respective orders sent to individual stores. 

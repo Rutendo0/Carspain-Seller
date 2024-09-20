@@ -68,6 +68,7 @@ export interface Product {
     year: number;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    inventory: number;
 }
 
 export interface Order {
@@ -79,4 +80,8 @@ export interface Order {
     order_status: string,
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    method: string;
+    store_name: string;
+    store_id: string;
+    userId: string;
 }
