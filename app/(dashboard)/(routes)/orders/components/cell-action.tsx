@@ -28,10 +28,11 @@ export const    CellAction = ({data}: CellActionProps) => {
      }
      const onCopyUrl = (id: string) => {
         navigator.clipboard.writeText(id)
-        toast.success("Phone number copied to clipboard")
+        toast.success("Order Link copied to clipboard")
      }
 
      const onDelete = async() => {
+
         try {
             setIsLoading(true);
 
@@ -87,7 +88,7 @@ export const    CellAction = ({data}: CellActionProps) => {
                     <Phone className="h-4 w-4 mr-2" />
                     Call Client
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onCopyUrl(`localhost:3000/${data.userId}/driver-portal`)}>
+                <DropdownMenuItem onClick={() => onCopyUrl(`localhost:3002/${data.userId}/driver-portal`)}>
                     <Phone className="h-4 w-4 mr-2" />
                     Copy Driver Link
                 </DropdownMenuItem>

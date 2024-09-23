@@ -58,15 +58,15 @@ export const IndustryForm = ({initialData}: IndustryFormProps) => {
 
 
             if(initialData){
-                await axios.patch(`/api/${params.storeId}/industries/${params.industryId}`, data);
+                await axios.patch(`/api/industries/${params.industryId}`, data);
             }
             else {
-                await axios.post(`/api/${params.storeId}/industries`, data);
+                await axios.post(`/api/industries`, data);
 
             }
             toast.success("Industry Updated");
             router.refresh();
-            router.push(`/${params.storeId}/industries`)
+            router.push(`/industries`)
 
 
 
@@ -83,12 +83,12 @@ export const IndustryForm = ({initialData}: IndustryFormProps) => {
         try {
             setIsloading(true);
 
-            await axios.delete(`/api/${params.storeId}/industries/${params.industryId}`);
+            await axios.delete(`/api/industries/${params.industryId}`);
 
 
             toast.success("Industry Removed");
             router.refresh();
-            router.push(`/api/${params.storeId}/industries`);
+            router.push(`/industries`);
 
 
         } catch (error) {

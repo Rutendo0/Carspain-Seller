@@ -4,46 +4,33 @@ import { useEffect, useState } from "react"
 import { Modal } from "@/components/modal"
 import { Button } from "@/components/ui/button"
 import toast, { Toast } from "react-hot-toast"
-import axios from "axios"
 
-interface DeleteModalProps {
+interface ProductModalProps {
     isOpen: boolean,
     onClose: () => void,
     onConfirm: () => void,
-    loading: boolean,
-    useriD: string
+    loading: boolean
 }
 
-export const DeleteModal = ({isOpen, 
+export const DeliveredModal = ({isOpen, 
     onClose, onConfirm, loading,
-}: DeleteModalProps) => {
-
-
+}: ProductModalProps) => {
    const[isMounted, setIsMounted] = useState(false)
-
    const handleConfirm = () => {
     onConfirm();
     toast.success("Action confirmed!");
 };
-
-
     useEffect(() => {
         setIsMounted(true)
     }, [])
 
 
-
-
-
-
     if(!isMounted){
         return null
     }
-
-
     return (
-        <Modal title="Are you sure you want to decline this order?"
-        description="Reversing this action cannot be undone."
+        <Modal title="Are you sure you have delivered the product to the currect customer?"
+        description="Reversing this action will put the orders in processing status"
         isOpen={isOpen}
         onClose={onClose}>
             <div className="pt-6 space-x-2 flex items-center justify-end w-full">

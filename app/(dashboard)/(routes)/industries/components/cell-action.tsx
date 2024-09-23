@@ -31,11 +31,11 @@ export const    CellAction = ({data}: CellActionProps) => {
         try {
             setIsLoading(true);
 
-            await axios.delete(`/api/${params.storeId}/industries/${data.id}`);
+            await axios.delete(`/api/industries/${data.id}`);
 
 
             toast.success("Industry Removed");
-            router.push(`/${params.storeId}/industries`);
+            router.push(`/industries`);
             router.refresh();
 
 

@@ -61,13 +61,13 @@ export const ModelForm = ({initialData, brands}: ModelFormProps) => {
             const matchingBrand = brands.find((item) => item.id === formBrandId)
 
             if(initialData){
-                await axios.patch(`/api/${params.storeId}/models/${params.modelId}`, {
+                await axios.patch(`/api/models/${params.modelId}`, {
                     ...data,
                     brandLabel: matchingBrand?.name,
                 });
             }
             else {
-                await axios.post(`/api/${params.storeId}/models`, {
+                await axios.post(`/api/models`, {
                     ...data,
                     brandLabel: matchingBrand?.name,
                 });
@@ -75,7 +75,7 @@ export const ModelForm = ({initialData, brands}: ModelFormProps) => {
             }
             toast.success("Store Updated");
             router.refresh();
-            router.push(`/${params.storeId}/models`)
+            router.push(`/models`)
 
 
 
@@ -92,12 +92,12 @@ export const ModelForm = ({initialData, brands}: ModelFormProps) => {
         try {
             setIsloading(true);
 
-            await axios.delete(`/api/${params.storeId}/models/${params.modelId}`);
+            await axios.delete(`/api/models/${params.modelId}`);
 
 
             toast.success("Model Removed");
             router.refresh();
-            router.push(`/api/${params.storeId}/models`);
+            router.push(`/models`);
 
 
         } catch (error) {

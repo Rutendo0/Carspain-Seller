@@ -14,14 +14,18 @@ import axios from "axios"
 import { deleteObject, ref } from "firebase/storage"
 import { Trash } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
-import React, { useEffect, useState } from "react"
+import React, { MouseEventHandler, useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 import Checkbox from "./checkbox"
 import { ProductModal } from "@/components/modal/product-modal"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { DeleteModal } from "@/components/modal/delete-modal"
+import { DeliveryModal } from "@/components/modal/delivery-modal"
+import { DeliveredModal } from "@/components/modal/deliver-modal"
+import { PaidModal } from "@/components/modal/paidmodal"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible"
 
 interface OrderFormProps {
     initialData: Order[];
@@ -49,13 +53,15 @@ const schema = z.object({
     year: number;
     orderId: string,
     productId: string,
-    price: number
+    price: number,
+    isPaid: boolean
 }
+
 
 
 export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
-    if(initialData.length == 0){
+    if(!initialData || initialData.length == 0){
         return <>
         <div className="flex items-center justify-center">
             <h3>No Pending Orders For this Client</h3>
@@ -73,18 +79,23 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
             const quantity = product.qty || 0;
             const productTotal = product.price * quantity;
             total += productTotal;
-            allProducts.push({
-                name: product.name,
-                store_name: order.store_name,
-                quantity: product.qty || 0,
-                image: product.images[0]?.url || '',
-                make: product.OEM,
-                model: product.model,
-                year: product.year,
-                orderId: order.id,
-                productId: product.id,
-                price: product.price
-            });
+            const productExists = allProducts.some(p => p.productId === product.id);
+
+            if (!productExists) {
+                allProducts.push({
+                    name: product.name,
+                    store_name: order.store_name,
+                    quantity: product.qty || 0,
+                    image: product.images[0]?.url || '',
+                    make: product.OEM,
+                    model: product.model,
+                    year: product.year,
+                    orderId: order.id,
+                    productId: product.id,
+                    price: product.price,
+                    isPaid: order.isPaid
+                });
+            }
         });
     });
 
@@ -95,8 +106,6 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
             orderIds.push(element.orderId)
         }
     });
-
-    console.log(orderIds);
     
 
 
@@ -117,7 +126,6 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
             product: false,
           },
     });
-    let allChecked = false;
 
 
     const [checkedProducts, setCheckedProducts] = useState(
@@ -125,11 +133,12 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       );
 
       useEffect(() => {
-        allChecked = checkedProducts.every(Boolean);
+        let allChecked = checkedProducts.every(Boolean);
         form.setValue('product_collected', allChecked);
       }, [checkedProducts, form]);
 
       const handleCheckboxChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log("made it")
         setOpen(true);
         console.log("ignored")
         const newCheckedProducts = [...checkedProducts];
@@ -138,36 +147,14 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
       };
 
-      const handleDeliveryChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+
+
+
+      const handleDeliveryChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+        const allChecked = checkedProducts.every(product => product === true);
         if(allChecked){
-            let orderIds: string[] = [];
-            allProducts.forEach(element => {
-                orderIds.push(element.orderId)
-            });
-    
-            setIsloading(true);
-            setOpen(true);
-            let data = {};
-            if(event.target.checked){
-                data = {
-                    order_status: "Delivering"
-                }
-            }
-            else {
-                data = {
-                    order_status: "Processing"
-                }
-                setIsDelivering(false);
-            }
-            try{
-                for(const orderID in orderIds){
-                    await axios.patch(`/api/orders/${orderID}`, data);
-                }
-                toast.success("Order Status Updated")
-            }
-            catch(error){
-                console.log("Failure")
-            }
+            setDeliveringOpen(true);
         }
         else{
             toast.error("Collect all products first")
@@ -177,35 +164,87 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       };
 
 
-      const handleDeliveredChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if(allChecked){
-            let orderIds: string[] = [];
-            allProducts.forEach(element => {
-                orderIds.push(element.orderId)
-            });
-            setIsloading(true);
-            setOpen(true);
-            let data = {};
-            if(event.target.checked){
-                data = {
-                    order_status: "Delivered"
-                }
-            }
-            else {
-                data = {
-                    order_status: "Processing"
-                }
-                setIsDelivered(false)
-            }
-            try{
-                for(const orderID in orderIds){
-                    await axios.patch(`/api/orders/${orderID}`, data);
-                }
+      const delivering = async (status: string) => {
+        let data = {}
+        data = {
+            order_status: status
+            
+        }
+
+        try {
+            
+            await axios.patch(`/api/orders/${userId}`, data);
+
+            toast.success("Order Status Updated")
+
+            setDeliveredOpen(false)
+            setIsDelivering(true);
+        }
+         catch (error) {
+            console.log(error)
+        }
+      }
+
+      const paid = async (status: string) => {
+        let data = {}
+        data = {
+            order_status: status
+            
+        }
+        if(isDelivered){
+            try {
+            
+                await axios.patch(`/api/orders/${userId}`, data);
+    
                 toast.success("Order Status Updated")
+    
+                setDeliveredOpen(false)
+                setIsPaid(true);
             }
-            catch(error){
-                console.log("Failure")
+             catch (error) {
+                console.log(error)
             }
+        }
+        else{
+            toast.error("Please check Delivered box first")
+        }
+
+
+      }
+
+
+
+      const delivered = async (status: string) => {
+        let data = {}
+        data = {
+            order_status: status
+            
+        }
+
+        try {
+            
+            await axios.patch(`/api/orders/${userId}`, data);
+
+            toast.success("Order Status Updated")
+
+            setDeliveredOpen(false)
+            setIsDelivered(true);
+        }
+         catch (error) {
+            console.log(error)
+        }
+      }
+
+
+      const handleDeliveredChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const allChecked = checkedProducts.every(product => product === true);
+        if(allChecked){
+
+
+            setDeliveredOpen(true);
+
+
+           
         }
         else{
             toast.error("Collect All products or decline order")
@@ -216,34 +255,10 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       };
 
       const handlePaidChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log("Anything");
+        const allChecked = checkedProducts.every(product => product === true);
         if(allChecked){
-            let orderIds: string[] = [];
-            allProducts.forEach(element => {
-                orderIds.push(element.orderId)
-            });
-            setIsloading(true);
-            setOpen(true);
-            let data = {};
-            if(event.target.checked){
-                data = {
-                    order_status: "Paid"
-                }
-            }
-            else {
-                data = {
-                    order_status: "Processing"
-                }
-                setIsPaid(false)
-            }
-            try{
-                for(const orderID in orderIds){
-                    await axios.patch(`/api/orders/${orderID}`, data);
-                }
-                toast.success("Order Status Updated")
-            }
-            catch(error){
-                console.log("Failure")
-            }
+            setPaidOpen(true);
         }
         else {
             toast.error("Please Collect all Products first")
@@ -257,170 +272,160 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
     const [open, setOpen] = useState(false);
     const [Dopen, setDOpen] = useState(false);
+    const [Deliveringopen, setDeliveringOpen] = useState(false);
+    const [Deliveredopen, setDeliveredOpen] = useState(false);
+    const [Paidopen, setPaidOpen] = useState(false);
+
+
+
+
+
+
+
     const params = useParams()
     const router = useRouter()
 
+    const completeOrder =async()=>{
+        setIsloading(true);
 
 
-    
-  
+
+        let data = {
+            order_status: "Complete"
+        }
+
+        try {
+            
+            await axios.patch(`/api/orders/${userId}`, data);
+
+            toast.success("Order Complete")
+
+
+
+            router.refresh();
+        }
+         catch (error) {
+            console.log(error)
+        }
+
+
+    }
 
 
     const onSubmit = async (data : z.infer<typeof schema>) => {
-        try {
-            setIsloading(true);
-
-            if(isPaid && data.product_collected){
-                let orderIds: string[] = [];
-                allProducts.forEach(element => {
-                    orderIds.push(element.orderId)
-                });
-    
-                let data = {
-                    order_status: "Complete"
-                }
-
-                try{
-                    for(const orderID in orderIds){
-                        await axios.patch(`/api/orders/${orderID}`, data);
-                    }
-                    toast.success("Order Status Updated")
-                }
-                catch(error){
-                    console.log("Failure")
-                }
-            }
+        console.log("Big Me");
+        if(isPaid){
+            completeOrder();
+        }
+       
             else{
                 toast.error("Please confirm products are collected and invoice is paid.")
             }
 
-
-
-            toast.success("Store Updated");
-            router.push(`/driver-portal`)
-            router.refresh();
-
-
-
-        } catch (error) {
-            toast.error("Something went wrong");
-        }
     }
 
-    const onDeleteProduct = async(productId: string) => {
-        // try {
-        //     setIsloading(true);
 
-        //     const updatedProducts = allProducts.filter(product => product.productId !== productId);
-        //     const removed = allProducts.filter(product => product.productId === productId);
-        //     removed.forEach(element => {
-        //         total -= (element.quantity * element.price)
-                
-        //     });
-        //     let orderIds: string[] = [];
-        //     for(const product in rem){
-        //         await axios.patch(`/api/orders/${orderID}`, data);
-        //     }
-        //     await axios.delete(`/api/${params.storeId}/category/${params.categoryId}`);
-
-        //     setAllProducts(updatedProducts);
-
-
-            
-
-
-        //     toast.success("Category Removed");
-        //     router.refresh();
-        //     router.push(`/api/${params.storeId}/categories`);
-
-
-        // } catch (error) {
-        //     toast.error("Something went wrong");
-        // }
-        // finally{
-        //     setIsloading(false)
-        //     setOpen(false);
-        // }
-    }
     const onDeleteOrder = async () => {
-        try {
+        event?.preventDefault();
+
+        console.log("fuck!")
 
             setDOpen(true);
-
-            if(!setDOpen){
-                for(const x of orderIds){
-                    await axios.delete(`/api/orders/single/${x}`);
-                }
-                toast.success("Order deleted, Goodbye")
-                router.push(`/new`);
-                router.refresh();
-            }
-
-            // toast.success("Order Declined");
-            // for(const x of orderId){
-            //     await axios.delete(`/api/orders/single/${x}`);
-            // }
-
-
-
-
-        } catch (error) {
-            toast.error("Something went wrong");
-        }
-        finally{
-            setIsloading(false)
-            setOpen(false);
-        }
     }
 
+    const completeDelete = async () => {
+        console.log("Hey!!!!");
+        try {
+
+            axios.delete(`../api/decline/${userId}`)
+            .catch(error => {
+                console.error('Error:', error.message);
+            });
+
+            // event?.preventDefault();
+
+            setDOpen(false)
+            router.push(`/driver-portal`)
+            router.refresh();
+            toast.success("Order deleted Successfully")
+            // router.push(`/new`);
+            // router.refresh();
+            // toast.success("Order Declined");
+
+        } catch (error) {
+            toast.error("Problem with declining order")
+            console.log(error)
+        }
+        
+    };
+
+    
 
   return <>
       <ProductModal isOpen={open} onClose={() => setOpen(false)}
         onConfirm={() => setOpen(false)} loading={isLoading}/>
+
+        <DeliveryModal isOpen={Deliveredopen} onClose={() => setDeliveredOpen(false)}
+        onConfirm={() => delivered("Delivered")} loading={isLoading}/>
+                <DeliveredModal isOpen={Deliveringopen} onClose={() => setDeliveringOpen(false)}
+        onConfirm={() => delivering("Delivering")} loading={isLoading}/>
+                <PaidModal isOpen={Paidopen} onClose={() => setPaidOpen(false)}
+        onConfirm={() => paid("Paid")} loading={isLoading}/>
+
         <DeleteModal isOpen={Dopen} onClose={() => setDOpen(false)}
-        onConfirm={() => setDOpen(false)} loading={isLoading} useriD={userId} />
+        onConfirm={() => completeDelete()} loading={isLoading} useriD={userId} />
 
 
     <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} 
+                    <form 
                     className="w-full space-y-8">
-                        <div className="flex justify-center items-center h-screen">
-                    <div className="overflow-y-scroll h-[60vh] w-[60vw] shadow-lg p-4 rounded-md
-                    p-10 scroll-p-25">
-                    {allProducts.map((product, index) => (
 
-                            <Controller
-                            
+
+                    <div className="container mx-auto p-4 rounded-lg shadow-lg max-h-screen overflow-y-auto">
+                        {allProducts.map((product, index) => (
+                        <Controller
                             key={product.productId}
                             disabled={isLoading}
                             name={`product`}
                             control={form.control}
                             render={({ field }) => (
+                            <Card className="mb-4">
 
-                                <div className="w-full flex items-center justify-between rounded border shadow p-2 mt-2" >
-                                <FormLabel className="mr-10">{product.name}</FormLabel>
-                                <FormLabel className="mr-10">{product.store_name}</FormLabel>
-                                <FormLabel className="mr-10">{product.make}</FormLabel>
-                                <FormLabel className="mr-10">{product.model}</FormLabel>
-                                <FormLabel className="mr-10">{product.year}</FormLabel>
-                                <Checkbox
-                                                checked={checkedProducts[index]}
-                                                onChange={handleCheckboxChange(index)}
-                                                
-                                                />
-                                                 
-                                </div>
+                                <CardContent>
+                                    <FormLabel className="mr-10"
+                                    >{product.name} , {product.make} {product.model}</FormLabel>
+                                    <div className="float-right mt-5">
+                                        <Checkbox
+                                        checked={checkedProducts[index]}
+                                        onChange={handleCheckboxChange(index)}
+                                        />
+                                    </div>
+
+                                    <Collapsible>
+                                    <CollapsibleTrigger className="text-gray-500 cursor-pointer hover:text-blue-500"> Click for Details</CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <FormLabel className="mr-10">{product.name}</FormLabel>
+                                        <FormLabel className="mr-10">{product.store_name}</FormLabel>
+                                        <FormLabel className="mr-10">{product.make}</FormLabel>
+                                        <FormLabel className="mr-10">{product.model}</FormLabel>
+                                        <FormLabel className="mr-10">{product.year}</FormLabel>
+                                    </CollapsibleContent>
+                                    </Collapsible>
+                                </CardContent>
+                      
+                            </Card>
                             )}
-                            />
+                        />
                         ))}
-                        
-                        </div></div>
-                        
+                    </div>
 
-                        <FormField control={form.control} name="delivering"
+
+                    <div className="container flex flex-col items-center mx-auto p-4 rounded-lg shadow-lg">
+
+                        <FormField  control={form.control} name="delivering"
                         render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Delivering</FormLabel>
+                            <FormItem className="mb-3">
+                                <FormLabel className="mr-10">Delivering</FormLabel>
                                 <FormControl>
                                     <Checkbox 
                                                     checked={isDelivering}
@@ -432,8 +437,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
                         <FormField control={form.control} name="delivered"
                         render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Delivered</FormLabel>
+                            <FormItem className="mb-3">
+                                <FormLabel className="mr-10">Delivered</FormLabel>
                                 <FormControl>
                                     <Checkbox 
                                                     checked={isDelivered}
@@ -447,8 +452,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
                         <FormField control={form.control} name="paid"
                         render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Invoice Paid</FormLabel>
+                            <FormItem className="mb-3">
+                                <FormLabel className="mr-10">Invoice Paid</FormLabel>
                                 <FormControl>
                                     <Checkbox 
                                                     checked={isPaid}
@@ -459,21 +464,23 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                         )}/>
 
 
-                            <h2>The Total for the Invoice is: ${total}</h2>
+                            <h2 className="mb-3">The Total for the Invoice is: ${total}</h2>
                     
-                            <Button  size={"lg"} onClick={async ()=> {
-                                onDeleteOrder()
-                            }}
+                            <Button className="mb-3 lg:bg-red-500 lg:hover:bg-red-700 lg:cursor-pointer lg:transition lg:duration-500" size={"lg"} onClick={onDeleteOrder}
                             >Decline Order
                             </Button>
-                            <Button disabled={isLoading} size={"lg"} type="submit"
+                            <Button className="mb-3 lg:bg-blue-500 lg:hover:bg-blue-700 lg:cursor-pointer lg:transition lg:duration-500" disabled={isLoading} size={"lg"} type="submit" 
                             >Confirm Order Completion
                             </Button>
 
+                    </div>
+                
                     </form>
                 </Form>
                 
 
-
+<footer className="mx-auto  fixed bottom-3 left-10 text-gray-500">
+    2024 Developed by <a href="https://gorillaresearch.net">GRI</a>
+</footer>
   </>
 }

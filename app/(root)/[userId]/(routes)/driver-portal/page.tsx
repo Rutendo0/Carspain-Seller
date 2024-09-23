@@ -1,9 +1,12 @@
+
 import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import {Billboards, Category, Order} from "@/types-db"
 import { OrderPage } from "./_components/order-page";
 import { Heading } from "@/components/heading";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { FixPage } from "./_components/fix-page";
 
 const DriverPage = async ({
     params}: {params: { userId : string }}) => {
@@ -24,11 +27,17 @@ const DriverPage = async ({
             const ordersSnapshot = await getDocs(ordersQuery);
             const order = ordersSnapshot.docs.map(doc => doc.data() as Order);
 
+            const filteredOrders = order.filter(order => order.order_status !== "Complete");
 
 
-            if(!ordersSnapshot.empty){
-                allOrders = allOrders.concat(order);
+
+            if(filteredOrders.length > 0){
+                allOrders = allOrders.concat(filteredOrders);
             }
+        }
+
+        const tryone = () => {
+            console.log("hey!!")
         }
 
 
@@ -41,7 +50,8 @@ const DriverPage = async ({
             description="All the orders for this user that are not complete"/>
         </div>
         <Separator/>
-            <OrderPage initialData={allOrders} userId={params.userId}></OrderPage>
+            {/* <OrderPage initialData={allOrders} userId={params.userId}></OrderPage> */}
+            <OrderPage userId={params.userId} initialData={allOrders} ></OrderPage>
         </div>
     );
 }

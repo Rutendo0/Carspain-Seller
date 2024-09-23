@@ -23,7 +23,9 @@ const OrdersPage = async () => {
             )
         ).docs.map(doc => doc.data()) as Order[];
 
-        const Neworders = allOrders.concat(ordersData)
+        const filteredOrders = ordersData.filter(order => order.order_status !== "Complete");
+
+        const Neworders = allOrders.concat(filteredOrders)
         allOrders = Neworders;
     }
  
@@ -38,7 +40,7 @@ const OrdersPage = async () => {
             isPaid: item.isPaid,
             phone: item.phone,
             address: item.address,
-            products: item.orderItems.map(item => item.name).join(", "),
+            products: item.orderItems.map(ite => ite.name).join(", "),
             store_id: item.store_id,
             order_status: item.order_status,
             totalPrice: formatter.format(

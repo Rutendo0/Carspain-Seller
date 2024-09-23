@@ -18,7 +18,8 @@ export const GET = async (reQ: Request,
         // Step 2: Fetch orders for each store
         let allOrders : Order[] = [];
         const ordersQuery = query(
-            collection(doc(db, "stores", params.storeId), "orders")
+            collection(doc(db, "stores", params.storeId), "orders"),
+            where("order_status", "!=", "Complete")
         );
 
 

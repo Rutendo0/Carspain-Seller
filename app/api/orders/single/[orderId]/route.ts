@@ -19,10 +19,16 @@ export const GET = async (reQ: Request,
         let allOrders : Order = {} as Order;
         for (const storeId of storeIds) {
 
-            const orderDoc = await getDoc(doc(db, "stores", storeId, "orders", params.orderId));
-            if(orderDoc.exists()){
-                allOrders = orderDoc.data() as Order;
-            }
+            const ordersRef = collection(db, "stores", storeId, "orders");
+            const q = query(ordersRef,  where("id", "==", params.orderId));
+
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                if(doc.exists()){
+                    allOrders = doc.data() as Order;
+                }
+            });
+
         }
     
         return NextResponse.json(allOrders)
@@ -66,14 +72,6 @@ export const PATCH = async (reQ: Request,
             return new NextResponse("No order specified", {status: 400})
         }
 
-        const store = await getDoc(doc(db, "stores", store_id))
-
-        if(store.exists()){
-            let storeData = store.data()
-            if(storeData?.userId !== userId){
-                return new NextResponse("Unauthorized Access", {status: 500})
-            }
-        }
 
      const orderRef = await getDoc(
         doc(db, "stores", store_id, "orders", params.orderId)
@@ -118,6 +116,8 @@ export const DELETE = async (reQ: Request,
 ) => {
     const body = await reQ.json()
     try {
+
+        console.log("Arrival!!!!!!")
         const {userId} = auth()
     
         if(!userId){
