@@ -6,7 +6,7 @@ import { BrandForm } from "./_components/brand-form";
 const BrandPage = async ({
     params}: {params: {brandId: string}}) => {
 
-        const brand = (await getDoc(doc(db, "data",
+        const brand = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
             "brands", params.brandId
         ))).data() as Brand;
 

@@ -29,14 +29,14 @@ export const POST = async (reQ: Request,
         }
 
         const BrandRef = await addDoc(
-            collection(db,"data", "brands"),
+            collection(db,"data", "wModRJCDon6XLQYmnuPT", "brands"),
             BrandData
         );
 
         const id = BrandRef.id;
 
 
-        await updateDoc(doc(db, "data", "brands", id), 
+        await updateDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT", "brands", id), 
         {...BrandData,
             id,
             updatedAt: serverTimestamp()
@@ -62,7 +62,7 @@ export const GET = async (reQ: Request,
 
         const BrandData = (
             await getDocs(
-                collection(doc(db, "data"), "brands")
+                collection(doc(db, "data", "wModRJCDon6XLQYmnuPT"), "brands")
             )
         ).docs.map(doc => doc.data()) as Brand[];
 

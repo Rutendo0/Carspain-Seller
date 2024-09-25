@@ -69,6 +69,25 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         </>
     }
 
+    const [open, setOpen] = useState(false);
+    const [Dopen, setDOpen] = useState(false);
+    const [Deliveringopen, setDeliveringOpen] = useState(false);
+    const [Deliveredopen, setDeliveredOpen] = useState(false);
+    const [Paidopen, setPaidOpen] = useState(false);
+
+
+
+    const [isLoading, setIsloading] = useState(false);
+    const [isDelivering, setIsDelivering] = useState(false);
+    const [isDelivered, setIsDelivered] = useState(false);
+    const [isDeclined, setIsDeclined] = useState(false);
+    const [isPaid, setIsPaid] = useState(false);
+
+
+
+    const params = useParams()
+    const router = useRouter()
+
 
     const [allProducts, setAllProducts] = useState<ProductSummary[]>([]);
 
@@ -109,12 +128,6 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
     
 
 
-    const [isLoading, setIsloading] = useState(false);
-    const [isDelivering, setIsDelivering] = useState(false);
-    const [isDelivered, setIsDelivered] = useState(false);
-    const [isDeclined, setIsDeclined] = useState(false);
-    const [isPaid, setIsPaid] = useState(false);
-
     const form = useForm<z.infer<typeof schema>>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -153,16 +166,54 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
       const handleDeliveryChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
         const allChecked = checkedProducts.every(product => product === true);
-        if(allChecked){
-            setDeliveringOpen(true);
-        }
-        else{
+
+        setDeliveringOpen(allChecked);
+        
+        if (!allChecked){
             toast.error("Collect all products first")
         }
        
 
       };
 
+
+
+
+
+
+
+
+
+
+      const handleDeliveredChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const allChecked = checkedProducts.every(product => product === true);
+
+
+
+            setDeliveredOpen(allChecked);
+
+
+           
+
+            if(!allChecked){
+            toast.error("Collect All products or decline order")
+        }
+        
+        
+
+      };
+
+      const handlePaidChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log("Anything");
+        const allChecked = checkedProducts.every(product => product === true);
+
+        setPaidOpen(allChecked);
+        if(!allChecked) {
+            toast.error("Please Collect all Products first")
+        }
+        
+
+      };
 
       const delivering = async (status: string) => {
         let data = {}
@@ -177,42 +228,13 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
             toast.success("Order Status Updated")
 
-            setDeliveredOpen(false)
+            setDeliveringOpen(false)
             setIsDelivering(true);
         }
          catch (error) {
             console.log(error)
         }
       }
-
-      const paid = async (status: string) => {
-        let data = {}
-        data = {
-            order_status: status
-            
-        }
-        if(isDelivered){
-            try {
-            
-                await axios.patch(`/api/orders/${userId}`, data);
-    
-                toast.success("Order Status Updated")
-    
-                setDeliveredOpen(false)
-                setIsPaid(true);
-            }
-             catch (error) {
-                console.log(error)
-            }
-        }
-        else{
-            toast.error("Please check Delivered box first")
-        }
-
-
-      }
-
-
 
       const delivered = async (status: string) => {
         let data = {}
@@ -235,55 +257,40 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         }
       }
 
-
-      const handleDeliveredChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const allChecked = checkedProducts.every(product => product === true);
-        if(allChecked){
-
-
-            setDeliveredOpen(true);
-
-
-           
+      const paid = async (status: string) => {
+        let data = {}
+        data = {
+            order_status: status
+            
+        }
+        if(isDelivered){
+            try {
+            
+                await axios.patch(`/api/orders/${userId}`, data);
+    
+                toast.success("Order Status Updated")
+    
+                setPaidOpen(false)
+                setIsPaid(true);
+            }
+             catch (error) {
+                console.log(error)
+            }
         }
         else{
-            toast.error("Collect All products or decline order")
+            toast.error("Please check Delivered box first")
         }
-        
-        
 
-      };
 
-      const handlePaidChange = () => async (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("Anything");
-        const allChecked = checkedProducts.every(product => product === true);
-        if(allChecked){
-            setPaidOpen(true);
-        }
-        else {
-            toast.error("Please Collect all Products first")
-        }
-        
+      }
 
-      };
+
+
     // const productsCollected = watch('products').every(product => product.collected);
 
   
 
-    const [open, setOpen] = useState(false);
-    const [Dopen, setDOpen] = useState(false);
-    const [Deliveringopen, setDeliveringOpen] = useState(false);
-    const [Deliveredopen, setDeliveredOpen] = useState(false);
-    const [Paidopen, setPaidOpen] = useState(false);
 
-
-
-
-
-
-
-    const params = useParams()
-    const router = useRouter()
 
     const completeOrder =async()=>{
         setIsloading(true);
@@ -301,7 +308,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
             toast.success("Order Complete")
 
 
-
+            setIsloading(false)
             router.refresh();
         }
          catch (error) {
@@ -365,15 +372,16 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       <ProductModal isOpen={open} onClose={() => setOpen(false)}
         onConfirm={() => setOpen(false)} loading={isLoading}/>
 
-        <DeliveryModal isOpen={Deliveredopen} onClose={() => setDeliveredOpen(false)}
-        onConfirm={() => delivered("Delivered")} loading={isLoading}/>
-                <DeliveredModal isOpen={Deliveringopen} onClose={() => setDeliveringOpen(false)}
-        onConfirm={() => delivering("Delivering")} loading={isLoading}/>
+<DeleteModal isOpen={Dopen} onClose={() => setDOpen(false)}
+        onConfirm={() => completeDelete()} loading={isLoading} useriD={userId} />
+
+        <DeliveryModal isOpen={Deliveringopen} onClose={() => setDeliveringOpen(false)}
+        onConfirm={() => delivering("Delivered")} loading={isLoading}/>
+                <DeliveredModal isOpen={Deliveredopen} onClose={() => setDeliveredOpen(false)}
+        onConfirm={() => delivered("Delivering")} loading={isLoading}/>
                 <PaidModal isOpen={Paidopen} onClose={() => setPaidOpen(false)}
         onConfirm={() => paid("Paid")} loading={isLoading}/>
 
-        <DeleteModal isOpen={Dopen} onClose={() => setDOpen(false)}
-        onConfirm={() => completeDelete()} loading={isLoading} useriD={userId} />
 
 
     <Form {...form}>

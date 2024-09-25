@@ -10,6 +10,7 @@ import { DropdownMenuContent,  DropdownMenu, DropdownMenuItem, DropdownMenuLabel
 import toast from "react-hot-toast"
 import axios from "axios"
 import { AlertModal } from "@/components/modal/alert-modal"
+import { useOrigin } from "@/hooks/use-origin"
 
 interface CellActionProps {
     data: OrderColumns
@@ -18,6 +19,7 @@ interface CellActionProps {
 export const    CellAction = ({data}: CellActionProps) => {
     const router = useRouter()
     const params = useParams()
+    const origin = useOrigin()
 
     const [isLoading, setIsLoading] = useState(false)
     const [open, setOpen] = useState(false)
@@ -88,7 +90,7 @@ export const    CellAction = ({data}: CellActionProps) => {
                     <Phone className="h-4 w-4 mr-2" />
                     Call Client
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onCopyUrl(`localhost:3002/${data.userId}/driver-portal`)}>
+                <DropdownMenuItem onClick={() => onCopyUrl(`${origin}/${data.userId}/driver-portal`)}>
                     <Phone className="h-4 w-4 mr-2" />
                     Copy Driver Link
                 </DropdownMenuItem>

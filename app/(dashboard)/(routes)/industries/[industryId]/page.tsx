@@ -6,7 +6,7 @@ import { IndustryForm } from "./_components/industry-form";
 const IndustryPage = async ({
     params}: {params: {industryId: string}}) => {
 
-        const industry = (await getDoc(doc(db, "stores",
+        const industry = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
             "industries", params.industryId
         ))).data() as Industry;
 

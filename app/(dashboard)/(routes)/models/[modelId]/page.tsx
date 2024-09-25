@@ -5,13 +5,13 @@ import { ModelForm } from "./_components/model-form";
 
 const ModelPage = async ({
     params}: {params: { modelId: string}}) => {
-        const model = (await getDoc(doc(db, "stores",
+        const model = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
             "models", params.modelId
         ))).data() as Model;
 
         const brandData = (
             await getDocs(
-                collection(doc(db, "data"), "brands")
+                collection(doc(db, "data", "wModRJCDon6XLQYmnuPT"), "brands")
             )
         ).docs.map(doc => doc.data()) as Brand[];
 

@@ -57,15 +57,15 @@ export const BillboardForm = ({initialData}: BillboardFormProps) => {
             setIsloading(true);
 
             if(initialData){
-                await axios.patch(`/api/${params.storeId}/billboards/${params.billboardId}`, data);
+                await axios.patch(`/api/billboards/${params.billboardId}`, data);
             }
             else {
-                await axios.post(`/api/${params.storeId}/billboards/`, data);
+                await axios.post(`/api/billboards/`, data);
 
             }
             toast.success("Store Updated");
             router.refresh();
-            router.push(`/${params.storeId}/billboards`)
+            router.push(`/billboards`)
 
 
 
@@ -83,12 +83,12 @@ export const BillboardForm = ({initialData}: BillboardFormProps) => {
             setIsloading(true);
             const {imageUrl} = form.getValues()
             await deleteObject(ref(storage, imageUrl)).then(async () =>{
-                await axios.delete(`/api/${params.storeId}/billboards/${params.billboardId}`);
+                await axios.delete(`/api/billboards/${params.billboardId}`);
             })
 
             toast.success("Store Removed");
             router.refresh();
-            router.push(`/api/${params.storeId}/billboards`);
+            router.push(`/api/billboards`);
 
 
         } catch (error) {

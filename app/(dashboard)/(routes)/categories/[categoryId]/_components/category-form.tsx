@@ -61,13 +61,13 @@ export const CategoryForm = ({initialData, billboards}: CategoryFormProps) => {
             const matchingBillboard = billboards.find((item) => item.id === formBillId)
 
             if(initialData){
-                await axios.patch(`/api/${params.storeId}/categories/${params.categoryId}`, {
+                await axios.patch(`/api/categories/${params.categoryId}`, {
                     ...data,
                     billboardLabel: matchingBillboard?.label,
                 });
             }
             else {
-                await axios.post(`/api/${params.storeId}/categories`, {
+                await axios.post(`/api/categories`, {
                     ...data,
                     billboardLabel: matchingBillboard?.label,
                 });
@@ -75,7 +75,7 @@ export const CategoryForm = ({initialData, billboards}: CategoryFormProps) => {
             }
             toast.success("Store Updated");
             router.refresh();
-            router.push(`/${params.storeId}/categories`)
+            router.push(`/categories`)
 
 
 
@@ -92,12 +92,12 @@ export const CategoryForm = ({initialData, billboards}: CategoryFormProps) => {
         try {
             setIsloading(true);
 
-            await axios.delete(`/api/${params.storeId}/category/${params.categoryId}`);
+            await axios.delete(`/api/category/${params.categoryId}`);
 
 
             toast.success("Category Removed");
             router.refresh();
-            router.push(`/api/${params.storeId}/categories`);
+            router.push(`/api/categories`);
 
 
         } catch (error) {

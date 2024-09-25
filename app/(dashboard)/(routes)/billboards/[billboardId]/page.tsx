@@ -5,7 +5,7 @@ import { BillboardForm } from "./_components/billboard-form";
 
 const BillboardPage = async ({
     params}: {params: {billboardId: string}}) => {
-        const billboard = (await getDoc(doc(db, "data",
+        const billboard = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
             "billboards", params.billboardId
         ))).data() as Billboards;
 

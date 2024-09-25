@@ -58,15 +58,15 @@ export const BrandForm = ({initialData}: BrandFormProps) => {
 
             if(initialData){
                 console.log("-----------------AAAAAAAAAAA___________________")
-                await axios.patch(`/api/${params.storeId}/brands/${params.brandId}`, data);
+                await axios.patch(`/api/brands/${params.brandId}`, data);
             }
             else {
-                await axios.post(`/api/${params.storeId}/brands`, data);
+                await axios.post(`/api/brands`, data);
 
             }
             toast.success("Brand Updated");
             router.refresh();
-            router.push(`/${params.storeId}/brands`)
+            router.push(`/brands`)
 
 
 
@@ -83,12 +83,12 @@ export const BrandForm = ({initialData}: BrandFormProps) => {
         try {
             setIsloading(true);
 
-            await axios.delete(`/api/${params.storeId}/brands/${params.brandId}`);
+            await axios.delete(`/api/brands/${params.brandId}`);
 
 
             toast.success("brand Removed");
             router.refresh();
-            router.push(`/api/${params.storeId}/brands`);
+            router.push(`/api/brands`);
 
 
         } catch (error) {
