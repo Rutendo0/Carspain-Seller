@@ -55,8 +55,8 @@ export const POST = async (req: Request) => {
 
             // Iterate through each line item
             for (const item of lineItems.data) {
-                const storeId = item.price?.product.metadata.store_id;
-                const orderId = item.price?.product.metadata.order_id;
+                const storeId = item.price?.metadata.store_id;
+                const orderId = item.price?.metadata.order_id;
                 console.log(session)
 
 
