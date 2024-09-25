@@ -22,7 +22,7 @@ export const ModelClient = ({data}: ModelClientProps) => {
   <div className="flex items-center justify-between">
     <Heading title={`Models (${data.length})`}
     description="Manage Models for your store"/>
-    <Button onClick={() => router.push(`/${params.storeId}/models/new`)}>
+    <Button onClick={() => router.push(`/models/new`)}>
         <Plus className="h4 w-4 mr-2" />
         Add New
     </Button>

@@ -22,7 +22,7 @@ export const CategoryClient = ({data}: CategoryClientProps) => {
   <div className="flex items-center justify-between">
     <Heading title={`Categories (${data.length})`}
     description="Manage Categories for your store"/>
-    <Button onClick={() => router.push(`/${params.storeId}/categories/new`)}>
+    <Button onClick={() => router.push(`/categories/new`)}>
         <Plus className="h4 w-4 mr-2" />
         Add New
     </Button>

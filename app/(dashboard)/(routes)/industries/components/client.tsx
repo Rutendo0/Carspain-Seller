@@ -22,7 +22,7 @@ export const IndustryClient = ({data}: IndustryClientProps) => {
   <div className="flex items-center justify-between">
     <Heading title={`Industries (${data.length})`}
     description="Manage Industries for your store"/>
-    <Button onClick={() => router.push(`/${params.storeId}/industries/new`)}>
+    <Button onClick={() => router.push(`/industries/new`)}>
         <Plus className="h4 w-4 mr-2" />
         Add New
     </Button>
