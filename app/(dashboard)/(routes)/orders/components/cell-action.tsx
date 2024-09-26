@@ -58,7 +58,7 @@ export const    CellAction = ({data}: CellActionProps) => {
     const onUpdate = async (data:any) => {
         try {
             setIsLoading(true);
-            await axios.patch(`/api/orders/${data.id}`, data);
+            await axios.patch(`/api/orders/single/${data.id}`, data);
             router.push(`/orders`)
             location.reload();
             toast.success("Order Updated")
