@@ -114,6 +114,7 @@ export const PATCH = async (reQ: Request,
 export const DELETE = async (reQ: Request,
     {params} : {params: {orderId : string}}
 ) => {
+
     try {
 
         console.log("Arrival!!!!!!")

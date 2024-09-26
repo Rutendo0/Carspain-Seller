@@ -9,6 +9,8 @@ import { NextResponse } from "next/server";
 export const DELETE = async (reQ: Request, { params }: { params: { userId: string } }) => {
 
     try {
+
+        console.log("here!!!!!!");
         const { userId } = auth();
 
         if (!userId) {
@@ -24,8 +26,7 @@ export const DELETE = async (reQ: Request, { params }: { params: { userId: strin
 
         for (const storeId of storeIds) {
             const ordersRef = collection(db, "stores", storeId, "orders");
-            const q = query(ordersRef, where("userId", "==", params.userId),
-            where("order_status", "!=", "Complete"));
+            const q = query(ordersRef, where("userId", "==", params.userId));
 
             const querySnapshot = await getDocs(q);
 

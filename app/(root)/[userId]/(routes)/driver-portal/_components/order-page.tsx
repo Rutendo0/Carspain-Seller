@@ -335,7 +335,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
     const onDeleteOrder = async () => {
         event?.preventDefault();
 
-        console.log("fuck!")
+
 
             setDOpen(true);
     }
@@ -344,15 +344,15 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         console.log("Hey!!!!");
         try {
 
-            axios.delete(`../api/decline/${userId}`)
+            await axios.delete(`../../api/decline/${userId}`)
             .catch(error => {
                 console.error('Error:', error.message);
             });
 
             // event?.preventDefault();
+ 
 
             setDOpen(false)
-            router.push(`/driver-portal`)
             router.refresh();
             toast.success("Order deleted Successfully")
             // router.push(`/new`);
