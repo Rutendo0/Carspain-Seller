@@ -218,7 +218,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       const delivering = async (status: string) => {
         let data = {}
         data = {
-            order_status: status
+            order_status: status,
+            isPaid: false,
             
         }
 
@@ -239,8 +240,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       const delivered = async (status: string) => {
         let data = {}
         data = {
-            order_status: status
-            
+            order_status: status,
+            isPaid: false,
         }
 
         try {
@@ -260,7 +261,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       const paid = async (status: string) => {
         let data = {}
         data = {
-            order_status: status
+            order_status: status,
+            isPaid: true,
             
         }
         if(isDelivered){
@@ -298,7 +300,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
 
         let data = {
-            order_status: "Complete"
+            order_status: "Complete",
+            isPaid:  isPaid,
         }
 
         try {

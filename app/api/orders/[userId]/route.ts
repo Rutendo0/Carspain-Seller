@@ -59,7 +59,7 @@ export const PATCH = async (reQ: Request,
             return new NextResponse("Unauthorized", {status: 400})
         }
     
-        const {order_status} = body;
+        const {order_status, isPaid} = body;
     
     
         if(!order_status){
@@ -82,7 +82,7 @@ export const PATCH = async (reQ: Request,
 
             const querySnapshot = await getDocs(q);
             for (const doc of querySnapshot.docs) {
-                await updateDoc(doc.ref, { order_status });
+                await updateDoc(doc.ref, { order_status, isPaid });
             }
 
         }
