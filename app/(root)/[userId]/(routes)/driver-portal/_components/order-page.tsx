@@ -12,7 +12,7 @@ import { Order, Product } from "@/types-db"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import { deleteObject, ref } from "firebase/storage"
-import { Trash } from "lucide-react"
+import { Phone, Trash } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import React, { MouseEventHandler, useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -26,6 +26,7 @@ import { DeliveryModal } from "@/components/modal/delivery-modal"
 import { DeliveredModal } from "@/components/modal/deliver-modal"
 import { PaidModal } from "@/components/modal/paidmodal"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible"
+import { OrderColumns } from "@/app/(dashboard)/(routes)/orders/components/columns"
 
 interface OrderFormProps {
     initialData: Order[];
@@ -261,7 +262,6 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       const paid = async (status: string) => {
         let data = {}
         data = {
-            order_status: status,
             isPaid: true,
             
         }
@@ -369,6 +369,43 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         
     };
 
+    const removeProd = async (id: string, order : string) => {
+        event?.preventDefault()
+        try {
+            setIsloading(true)
+            const updatedProducts = allProducts.filter(product => product.productId !== id);
+
+            const { data: orderData } = await axios.get(`../../api/orders/single2/${order}`);
+            
+            // Filter out the product with the matching productId
+
+            const updatedOrderItems = orderData.orderItems.filter((item : ProductSummary)  => item.productId !== id);
+            console.log(id)
+            console.log(updatedProducts)
+            
+            // Update the order with the new orderItems array
+            const response = await axios.patch(`../../api/orders/single2/${order}`, {
+                orderItems: updatedOrderItems
+            });
+            if(response.status == 200){
+                setAllProducts(updatedProducts);
+                setIsloading(false)
+                toast.success("Product Removed")
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+
+
+    } 
+
+    const onCopy = (id: string) => {
+        navigator.clipboard.writeText(id)
+        toast.success("Phone number copied to clipboard")
+     }
+
+
     
 
   return <>
@@ -384,6 +421,13 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         onConfirm={() => delivered("Delivering")} loading={isLoading}/>
                 <PaidModal isOpen={Paidopen} onClose={() => setPaidOpen(false)}
         onConfirm={() => paid("Paid")} loading={isLoading}/>
+
+
+
+<div className="w-full flex items-center justify-center" onClick={() => onCopy(initialData[0].number)}>
+    <Phone className="h-4 w-4 mr-2" />
+    Call Client
+    </div>
 
 
 
@@ -410,6 +454,13 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                                         checked={checkedProducts[index]}
                                         onChange={handleCheckboxChange(index)}
                                         />
+                                        <Button className="ml-4" onClick={() => {
+                                            removeProd(product.productId, product.orderId)
+                                        
+                                        }}>
+                                        <Trash className="w-4 h-4" />
+                                        </Button>
+                                        
                                     </div>
 
                                     <Collapsible>

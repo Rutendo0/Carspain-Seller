@@ -62,6 +62,7 @@ export const    CellAction = ({data}: CellActionProps) => {
             router.push(`/orders`)
             location.reload();
             toast.success("Order Updated")
+            setIsLoading(false);
         } catch (error) {
             toast.error("Something Went Wrong")
         }finally{
@@ -86,7 +87,7 @@ export const    CellAction = ({data}: CellActionProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => onCopy(data.phone)}>
+                <DropdownMenuItem onClick={() => onCopy(data.number)}>
                     <Phone className="h-4 w-4 mr-2" />
                     Call Client
                 </DropdownMenuItem>

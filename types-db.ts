@@ -74,7 +74,7 @@ export interface Product {
 export interface Order {
     id: string;
     isPaid: boolean;
-    phone: string,
+    number: string,
     orderItems: Product[],
     address: string,
     order_status: string,
@@ -84,4 +84,5 @@ export interface Order {
     store_name: string;
     store_id: string;
     userId: string;
+    deliveryInstructions: string
 }

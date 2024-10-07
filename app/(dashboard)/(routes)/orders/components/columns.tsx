@@ -9,23 +9,25 @@ import { cn } from "@/lib/utils"
 
 export type OrderColumns = {
   id: string;
-  phone: string,
+  number: string,
   address: string,
   products: string,
   totalPrice : string,
   images: string[],
   isPaid: boolean;
+  store_name: string,
   createdAt: string
   order_status: string,
   store_id: string,
-  userId: string
+  userId: string,
+  deliveryIn: string
 }
 export const columns: ColumnDef<OrderColumns>[] = [
   {
     accessorKey: "images",
     header: "Images",
     cell : ({row}) => (
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 olverflow-y-auto">
         <CellImage data={row.original.images}/>
       </div>
     )
@@ -35,12 +37,16 @@ export const columns: ColumnDef<OrderColumns>[] = [
     header: "Products"
   },
   {
-    accessorKey: "phone",
-    header: "Phone"
+    accessorKey: "number",
+    header: "Client Phone"
   },
   {
     accessorKey: "address",
-    header: "Address"
+    header: "Client Address"
+  },
+  {
+    accessorKey: "shop_name",
+    header: "Shop Name"
   },
   {
     accessorKey: "totalPrice",

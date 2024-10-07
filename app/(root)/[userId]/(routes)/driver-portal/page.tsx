@@ -7,6 +7,8 @@ import { Heading } from "@/components/heading";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { FixPage } from "./_components/fix-page";
+import { Phone } from "lucide-react";
+import toast from "react-hot-toast";
 
 const DriverPage = async ({
     params}: {params: { userId : string }}) => {
@@ -48,7 +50,11 @@ const DriverPage = async ({
             <div className="flex items-center justify-center">
             <Heading title={`Order Page for User (${params.userId})`}
             description="All the orders for this user that are not complete"/>
+               
         </div>
+        <Separator/>
+        <h2>Delivery Instructions</h2>
+        <p className="w-full p-8 m-4 shadow-md rounded-md">{allOrders[0].deliveryInstructions}</p>
         <Separator/>
             {/* <OrderPage initialData={allOrders} userId={params.userId}></OrderPage> */}
             <OrderPage userId={params.userId} initialData={allOrders} ></OrderPage>

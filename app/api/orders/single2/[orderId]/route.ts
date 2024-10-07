@@ -60,14 +60,10 @@ export const PATCH = async (reQ: Request,
             return new NextResponse("Unauthorized", {status: 400})
         }
     
-        const {order_status, store_id} = body;
+        const {orderItems} = body;
+        console.log(orderItems)
+    
 
-        console.log(order_status, store_id)
-    
-    
-        if(!order_status){
-            return new NextResponse("Order Gone Missing", {status: 400})
-        }
 
 
 
@@ -76,35 +72,24 @@ export const PATCH = async (reQ: Request,
         }
 
 
-     const orderRef = await getDocs(
-        collection(db, "stores", store_id, "orders")
-     )
+        const storesSnapshot = await getDocs(collection(db, "stores"));
+        const storeIds = storesSnapshot.docs.map(doc => doc.id);
 
 
-
-     if(!orderRef.empty){
-        
-  
-        // await updateDoc(
-        //     doc(db, "stores", store_id, "orders", params.orderId), {
-        //         ...orderRef.data(),
-        //         order_status,
-        //         updatedAt: serverTimestamp(),
-        //     }
-        // )
-     }else{
-        return new NextResponse("Order not found!", {status: 404})
-     }
-
-     const order = (
-        await getDoc(
-            doc(db, "stores", store_id, "orders", params.orderId)
-        )
-     ).data() as Order;
-
-
-    return NextResponse.json(order);
-    
+        for (const storeId of storeIds) {
+            const orderRef = await getDoc(
+                doc(db, "stores", storeId, "orders", params.orderId)
+             )
+             if(orderRef.exists()){
+                await updateDoc(
+                    doc(db, "stores", storeId, "orders", params.orderId), {
+                        orderItems,
+                        updatedAt: serverTimestamp(),
+                    }
+                )
+             }
+        }
+        return NextResponse.json(200);
     
     }
    
