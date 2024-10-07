@@ -9,8 +9,8 @@ interface HeadingProps {
 
 export const Heading = ({title, description}: HeadingProps) => {
   return (
-    <div className="w-full">
-        <h2 className="text-3xl text-gray-600 font-bold tracking-tight">{title}</h2>
+    <div className="w-full flex justify-center flex-col items-center">
+        <h2 style={{ color: '#5a69f3' }}   className="tracking-tight font-bold text-base sm:text-lg md:text-xl lg:text-2xl">{title}</h2>
         <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   )

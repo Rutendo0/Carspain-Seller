@@ -374,14 +374,14 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         try {
             setIsloading(true)
             const updatedProducts = allProducts.filter(product => product.productId !== id);
+            console.log(allProducts)
 
             const { data: orderData } = await axios.get(`../../api/orders/single2/${order}`);
             
             // Filter out the product with the matching productId
 
-            const updatedOrderItems = orderData.orderItems.filter((item : ProductSummary)  => item.productId !== id);
-            console.log(id)
-            console.log(updatedProducts)
+            const updatedOrderItems = orderData.orderItems.filter((item : Product)  => item.id !== id);
+
             
             // Update the order with the new orderItems array
             const response = await axios.patch(`../../api/orders/single2/${order}`, {
@@ -391,6 +391,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                 setAllProducts(updatedProducts);
                 setIsloading(false)
                 toast.success("Product Removed")
+                router.refresh();
+                
             }
 
         } catch (error) {

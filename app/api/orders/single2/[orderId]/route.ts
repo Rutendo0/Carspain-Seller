@@ -83,6 +83,7 @@ export const PATCH = async (reQ: Request,
              if(orderRef.exists()){
                 await updateDoc(
                     doc(db, "stores", storeId, "orders", params.orderId), {
+                        ...orderRef.data(),
                         orderItems,
                         updatedAt: serverTimestamp(),
                     }

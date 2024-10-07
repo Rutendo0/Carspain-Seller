@@ -47,18 +47,25 @@ const DriverPage = async ({
     return (
         
         <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-center">
-            <Heading title={`Order Page for User (${params.userId})`}
-            description="All the orders for this user that are not complete"/>
-               
+        <div className="flex items-center justify-center">
+            <Heading 
+                title={`Order Page for User (${params.userId})`}
+                description="All the orders for this user that are not complete"
+                
+            />
         </div>
-        <Separator/>
-        <h2>Delivery Instructions</h2>
-        <p className="w-full p-8 m-4 shadow-md rounded-md">{allOrders[0].deliveryInstructions}</p>
-        <Separator/>
-            {/* <OrderPage initialData={allOrders} userId={params.userId}></OrderPage> */}
-            <OrderPage userId={params.userId} initialData={allOrders} ></OrderPage>
-        </div>
+        <Separator />
+        <h2 className="text-lg md:text-xl lg:text-2xl">Delivery Instructions</h2>
+        <p className="w-full p-4 md:p-6 lg:p-8 m-4 shadow-md rounded-md">
+            {allOrders[0].deliveryInstructions}
+        </p>
+        <Separator />
+        <OrderPage 
+            userId={params.userId} 
+            initialData={allOrders}
+        />
+    </div>
+    
     );
 }
 
