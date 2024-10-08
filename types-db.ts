@@ -4,6 +4,7 @@ export interface Store {
     id: string;
     name: string;
     userId: string;
+    address: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 }

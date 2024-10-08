@@ -1,8 +1,8 @@
-import { collection, doc, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import {format} from "date-fns"
 import { OrderClient } from "./components/client";
 import { db } from "@/lib/firebase";
-import {  Order } from "@/types-db";
+import {  Order, Store } from "@/types-db";
 import { OrderColumns } from "./components/columns";
 import { it } from "node:test";
 import { Phone } from "lucide-react";
@@ -22,6 +22,19 @@ const OrdersPage = async () => {
                 collection(doc(db, "stores", storeId), "orders")
             )
         ).docs.map(doc => doc.data()) as Order[];
+
+        const storeData = (await getDoc(doc(db, "stores", storeId))).data() as Store;
+
+        if (storeData.address) {
+            for(const x of ordersData){
+                x.store_address = storeData.address;
+            }
+        }
+        else {
+            for(const x of ordersData){
+                x.store_address = '';
+            }
+        }
 
         const filteredOrders = ordersData.filter(order => order.order_status !== "Complete");
 
