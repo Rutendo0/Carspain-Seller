@@ -19,6 +19,7 @@ export type OrderColumns = {
   createdAt: string
   order_status: string,
   store_id: string,
+  store_address: string,
   userId: string,
   deliveryIn: string
 }

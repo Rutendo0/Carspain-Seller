@@ -47,6 +47,7 @@ const schema = z.object({
   interface ProductSummary {
     name: string;
     store_name: string;
+    store_address: string;
     quantity: number;
     image: string;
     make: string;
@@ -105,6 +106,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                 allProducts.push({
                     name: product.name,
                     store_name: order.store_name,
+                    store_address: order.store_address,
                     quantity: product.qty || 0,
                     image: product.images[0]?.url || '',
                     make: product.OEM,
@@ -468,10 +470,11 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                                     <Collapsible>
                                     <CollapsibleTrigger className="text-gray-500 cursor-pointer hover:text-blue-500"> Click for Details</CollapsibleTrigger>
                                     <CollapsibleContent>
-                                        <FormLabel className="mr-10">{product.name}</FormLabel>
+                                        <FormLabel className="mr-10">Store:</FormLabel>
                                         <FormLabel className="mr-10">{product.store_name}</FormLabel>
-                                        <FormLabel className="mr-10">{product.make}</FormLabel>
-                                        <FormLabel className="mr-10">{product.model}</FormLabel>
+                                        <FormLabel className="mr-10">Store Adress: </FormLabel>
+                                        <FormLabel className="mr-10">{product.store_address}</FormLabel>
+                                        
                                         <FormLabel className="mr-10">{product.year}</FormLabel>
                                     </CollapsibleContent>
                                     </Collapsible>

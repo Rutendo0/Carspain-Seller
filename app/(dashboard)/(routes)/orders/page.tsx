@@ -42,6 +42,7 @@ const OrdersPage = async () => {
             address: item.address,
             deliveryIn: item.deliveryInstructions,
             store_name: item.store_name,
+            store_address: item.store_address,
             products: item.orderItems.map(ite => ite.name).join(", "),
             store_id: item.store_id,
             order_status: item.order_status,

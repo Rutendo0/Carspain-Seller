@@ -82,6 +82,7 @@ export interface Order {
     updatedAt: Timestamp;
     method: string;
     store_name: string;
+    store_address: string;
     store_id: string;
     userId: string;
     deliveryInstructions: string
