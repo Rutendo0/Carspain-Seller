@@ -96,9 +96,15 @@ export const columns: ColumnDef<OrderColumns>[] = [
           Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
+    },
+    sortingFn: (rowA, rowB) => {
+      const dateA :any = new Date(rowA.original.createdAt);
+      const dateB: any = new Date(rowB.original.createdAt);
+      return dateA - dateB;
     },
   },
+  
   {
     id: "Actions",
     cell: ({row}) => <CellAction data={row.original} />
