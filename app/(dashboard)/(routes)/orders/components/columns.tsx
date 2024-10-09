@@ -99,8 +99,8 @@ export const columns: ColumnDef<OrderColumns>[] = [
       );
     },
     sortingFn: (rowA, rowB) => {
-      const dateA :any = new Date(rowA.original.createdAt);
-      const dateB: any = new Date(rowB.original.createdAt);
+      const dateA :any = new Date(rowA.original.createdAt).getTime();
+      const dateB: any = new Date(rowB.original.createdAt).getTime();
       return dateA - dateB;
     },
   },
