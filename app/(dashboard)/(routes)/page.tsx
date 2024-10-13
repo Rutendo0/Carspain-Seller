@@ -12,14 +12,19 @@ import { Store } from "@/types-db";
 import { doc, getDoc } from "firebase/firestore";
 import { DollarSign } from "lucide-react";
 
+
 interface DashboardOverviewProps {
 }
 
+
 const DashboardOverview = async () => {
+
+
 
     // const totalRevenue = await getRevenue();
     const tsales = await getOrders();
     const tproducts = await getInventory();
+    const totalRevenue = await getGraphRevenue()
 
     const mgr = await getGraphRevenue()
 
@@ -28,7 +33,7 @@ const DashboardOverview = async () => {
         <Heading title="Dashboard" description="Overview of your Store" />
         <Separator/>
         <div className="grid gap-4 grid-cols-4">
-            {/* <Card className="col-span-2">
+            <Card className="col-span-2">
                 <CardHeader className="flex items-center justify-between flex-row">
                     <CardTitle className="text-sm font-medium">
                         Total Revenue
@@ -36,9 +41,9 @@ const DashboardOverview = async () => {
                     <DollarSign className="w-4h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">Zig: {totalRevenue}</div>
+                    <div className="text-2xl font-bold">$: 345345</div>
                 </CardContent>
-            </Card> */}
+            </Card>
 
 
             <Card className="col-span-1">
@@ -78,6 +83,8 @@ const DashboardOverview = async () => {
                     <Overview data={mgr}/>
                 </CardContent>
             </Card>
+
+            
 
            
         </div>
