@@ -154,9 +154,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
       }, [checkedProducts, form]);
 
       const handleCheckboxChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("made it")
-        setOpen(true);
-        console.log("ignored")
+  
         const newCheckedProducts = [...checkedProducts];
         newCheckedProducts[index] = event.target.checked;
         setCheckedProducts(newCheckedProducts);
@@ -413,8 +411,6 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
     
 
   return <>
-      <ProductModal isOpen={open} onClose={() => setOpen(false)}
-        onConfirm={() => setOpen(false)} loading={isLoading}/>
 
 <DeleteModal isOpen={Dopen} onClose={() => setDOpen(false)}
         onConfirm={() => completeDelete()} loading={isLoading} useriD={userId} />
@@ -474,8 +470,11 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                                         <FormLabel className="mr-10">{product.store_name}</FormLabel>
                                         <FormLabel className="mr-10">Store Adress: </FormLabel>
                                         <FormLabel className="mr-10">{product.store_address}</FormLabel>
-                                        
+                                        <br />
                                         <FormLabel className="mr-10">{product.year}</FormLabel>
+                                        <FormLabel className="mr-10">Quantity: ${product.quantity}</FormLabel>
+                                        <FormLabel className="mr-10">Price: ${product.price}</FormLabel>
+                                        <FormLabel className="mr-10">Total: ${product.price * product.quantity}</FormLabel>
                                     </CollapsibleContent>
                                     </Collapsible>
                                 </CardContent>
