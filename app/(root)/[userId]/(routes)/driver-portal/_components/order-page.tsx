@@ -264,10 +264,21 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
       const paid = async (status: string) => {
         let data = {}
-        data = {
-            isPaid: true,
-            
+        if(isDelivered && isDelivering){
+            data = {
+                order_status: 'Delivered',
+                isPaid: true,
+                
+            }
         }
+        else {
+            data = {
+                order_status: 'Processing', 
+                isPaid: true,
+                
+            }
+        }
+
         if(isDelivered){
             try {
             
