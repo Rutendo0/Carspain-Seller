@@ -445,9 +445,9 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         onConfirm={() => completeDelete()} loading={isLoading} useriD={userId} />
 
         <DeliveryModal isOpen={Deliveringopen} onClose={() => setDeliveringOpen(false)}
-        onConfirm={() => delivering("Delivered")} loading={isLoading}/>
+        onConfirm={() => delivering("Delivering")} loading={isLoading}/>
                 <DeliveredModal isOpen={Deliveredopen} onClose={() => setDeliveredOpen(false)}
-        onConfirm={() => delivered("Delivering")} loading={isLoading}/>
+        onConfirm={() => delivered("Delivered")} loading={isLoading}/>
                 <PaidModal isOpen={Paidopen} onClose={() => setPaidOpen(false)}
         onConfirm={() => paid("Paid")} loading={isLoading}/>
 
