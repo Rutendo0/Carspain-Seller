@@ -86,5 +86,6 @@ export interface Order {
     store_address: string;
     store_id: string;
     userId: string;
-    deliveryInstructions: string
+    deliveryInstructions: string;
+    dnumber: string
 }

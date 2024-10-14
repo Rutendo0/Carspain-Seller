@@ -12,12 +12,12 @@ import { Order, Product } from "@/types-db"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import { deleteObject, ref } from "firebase/storage"
-import { Phone, Trash } from "lucide-react"
+import { Phone, Redo, Trash } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import React, { MouseEventHandler, useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
-import { z } from "zod"
+import { number, z } from "zod"
 import Checkbox from "./checkbox"
 import { ProductModal } from "@/components/modal/product-modal"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -27,6 +27,7 @@ import { DeliveredModal } from "@/components/modal/deliver-modal"
 import { PaidModal } from "@/components/modal/paidmodal"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible"
 import { OrderColumns } from "@/app/(dashboard)/(routes)/orders/components/columns"
+import { PhoneModal } from "@/components/modal/phone-modal"
 
 interface OrderFormProps {
     initialData: Order[];
@@ -56,7 +57,8 @@ const schema = z.object({
     orderId: string,
     productId: string,
     price: number,
-    isPaid: boolean
+    isPaid: boolean,
+    dnumber: string
 }
 
 
@@ -115,7 +117,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                     orderId: order.id,
                     productId: product.id,
                     price: product.price,
-                    isPaid: order.isPaid
+                    isPaid: order.isPaid,
+                    dnumber: order.dnumber
                 });
             }
         });
@@ -123,11 +126,11 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
     let orderIds: string[] = [];
 
-    allProducts.forEach(element => {
-        if(!orderIds.includes(element.orderId)){
-            orderIds.push(element.orderId)
+    for(const x of allProducts){
+        if(!orderIds.includes(x.orderId)){
+            orderIds.push(x.orderId)
         }
-    });
+    }
     
 
 
@@ -407,6 +410,32 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         toast.success("Phone number copied to clipboard")
      }
 
+     const [Phoneopen, setPhoneOpen] = useState(false);
+
+     const [dnumber, setdnumber] = useState('');
+
+     const phone = async (id: string) => {
+        try {
+            setIsloading(true)
+            console.log(id)
+            for (const x of orderIds){
+                console.log(x)
+                const response = await axios.patch(`../../api/orders/single3/${x}`, {
+                    dnumber: id
+                });
+            }
+            setdnumber(id);
+            setPhoneOpen(false);
+            setIsloading(false);
+            toast.success("Number Updated");
+            router.refresh
+              
+        } catch (error) {
+            
+        }
+
+     }
+
 
     
 
@@ -424,10 +453,21 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
 
 
+
+
 <div className="w-full flex items-center justify-center" onClick={() => onCopy(initialData[0].number)}>
     <Phone className="h-4 w-4 mr-2" />
     Call Client
     </div>
+
+
+<div className="w-full flex items-center justify-center  cursor-pointer transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110  duration-300" onClick={() => setPhoneOpen(true)}>
+    <Redo className="h-4 w-4 mr-2" />
+    Set Driver Phone Number
+    </div>
+
+    <PhoneModal isOpen={Phoneopen} onClose={() => setPhoneOpen(false)}
+        onConfirm={phone} loading={isLoading}/>
 
 
 
