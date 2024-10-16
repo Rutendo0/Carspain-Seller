@@ -22,7 +22,7 @@ export const StoreClient = ({data}: OrderClientProps) => {
 
   return (<>
   <div className="flex items-center justify-between">
-    <Heading title={`Shops (${data.length})`}
+    <Heading title={` Carspian Shops (${data.length})`}
     description="Manage all shops on the platform!"/>
 
   </div>
