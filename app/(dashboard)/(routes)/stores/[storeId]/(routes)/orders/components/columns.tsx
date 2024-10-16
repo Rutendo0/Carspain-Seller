@@ -3,32 +3,26 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { CellAction } from "./cell-action"
 import CellImage from "./cell-image"
 import { cn } from "@/lib/utils"
 
 export type OrderColumns = {
   id: string;
-  number: string,
+  phone: string,
   address: string,
   products: string,
   totalPrice : string,
   images: string[],
   isPaid: boolean;
-  store_name: string,
-  createdAt: string,
-  order_status: string,
-  store_id: string,
-  store_address: string,
-  userId: string,
-  deliveryIn: string
+  createdAt: string
+  order_status: string
 }
 export const columns: ColumnDef<OrderColumns>[] = [
   {
     accessorKey: "images",
     header: "Images",
     cell : ({row}) => (
-      <div className="grid grid-cols-2 gap-2 olverflow-y-auto">
+      <div className="grid grid-cols-2 gap-2">
         <CellImage data={row.original.images}/>
       </div>
     )
@@ -38,16 +32,12 @@ export const columns: ColumnDef<OrderColumns>[] = [
     header: "Products"
   },
   {
-    accessorKey: "number",
-    header: "Client Phone"
+    accessorKey: "phone",
+    header: "Phone"
   },
   {
     accessorKey: "address",
-    header: "Client Address"
-  },
-  {
-    accessorKey: "shop_name",
-    header: "Shop Name"
+    header: "Address"
   },
   {
     accessorKey: "totalPrice",
@@ -104,9 +94,4 @@ export const columns: ColumnDef<OrderColumns>[] = [
       return dateA - dateB;
     },
   },
-  
-  {
-    id: "Actions",
-    cell: ({row}) => <CellAction data={row.original} />
-  }
 ]

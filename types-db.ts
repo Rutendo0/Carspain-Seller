@@ -7,7 +7,13 @@ export interface Store {
     address: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    store_owner: string;
+    tax_clearance: string;
+    ownerID: string;
+    number: string;
 }
+
+
 
 
 export interface Billboards {
