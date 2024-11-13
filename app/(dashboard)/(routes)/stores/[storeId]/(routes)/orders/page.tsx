@@ -28,7 +28,7 @@ const OrdersPage = async ({params} : {params : {storeId: string}}) => {
         item =>({
             id: item.id,
             isPaid: item.isPaid,
-            phone: item.phone,
+            phone: item.number,
             address: item.address,
             products: item.orderItems.map(item => item.name).join(", "),
             order_status: item.order_status,
