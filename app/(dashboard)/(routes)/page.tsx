@@ -24,7 +24,7 @@ const DashboardOverview = async () => {
     // const totalRevenue = await getRevenue();
     const tsales = await getOrders();
     const tproducts = await getInventory();
-    const totalRevenue = await getGraphRevenue()
+
 
     const mgr = await getGraphRevenue()
 
