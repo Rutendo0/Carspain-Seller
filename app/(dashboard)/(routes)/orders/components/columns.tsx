@@ -76,7 +76,7 @@ export const columns: ColumnDef<OrderColumns>[] = [
       return (
         <p className={cn(
           "text-base font-semibold",
-          (order_status === "Processing" && "text-orange-500") ||
+          (order_status === "Processing" && "text-orange-600") ||
           (order_status === "Delivering" && "text-blue-500") ||
           (order_status === "Delivered" && "text-green-500") 
         )}>
