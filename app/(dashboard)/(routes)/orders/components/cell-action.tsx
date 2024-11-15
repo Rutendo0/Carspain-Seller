@@ -105,7 +105,10 @@ export const    CellAction = ({data}: CellActionProps) => {
                     <Phone className="h-4 w-4 mr-2" />
                     Call Client
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onCopyUrl(`${origin}/${data.userID}/driver-portal`)}>
+                <DropdownMenuItem onClick={() => {
+                    console.log(data)
+                    onCopyUrl(`${origin}/${data.userID}/driver-portal`)
+                }}>
                     <Phone className="h-4 w-4 mr-2" />
                     Copy Driver Link
                 </DropdownMenuItem>

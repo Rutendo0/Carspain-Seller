@@ -49,16 +49,18 @@ const OrdersPage = async () => {
     const formattedorders : OrderColumns[] = allOrders.map(
         item =>({
             id: item.id,
-            userId: item.userId,
             isPaid: item.isPaid,
             number: item.number,
             address: item.address,
             deliveryIn: item.deliveryInstructions,
             store_name: item.store_name,
+            clientName: item.clientName,
+            clientEmail: item.clientEmail,
             store_address: item.store_address,
             products: item.orderItems.map(ite => ite.name).join(", "),
             store_id: item.store_id,
             order_status: item.order_status,
+            userID: item.userID,
             totalPrice: formatter.format(
                 item.orderItems.reduce((total, item) =>{
                     if(item && item.qty !== undefined){

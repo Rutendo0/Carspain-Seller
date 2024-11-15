@@ -24,7 +24,7 @@ const DriverPage = async ({
 
             const ordersQuery = query(
                 collection(doc(db, "stores", storeId), "orders"),
-                where("userId", "==", params.userId)
+                where("userID", "==", params.userId)
             );
 
             const ordersSnapshot = await getDocs(ordersQuery);
@@ -40,6 +40,7 @@ const DriverPage = async ({
         }
 
         for(const x of allOrders){
+            console.log(x);
             if(x.deliveryInstructions){
                 di = x.deliveryInstructions
             }
