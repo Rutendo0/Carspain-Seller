@@ -377,7 +377,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
     }
 
 
-    const onSubmit = async (data : z.infer<typeof schema>) => {
+    const onSubmit = async () => {
         console.log("Big Me");
         if(isPaid){
             completeOrder();
@@ -628,6 +628,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                             >Decline Order
                             </Button>
                             <Button className="mb-3 lg:bg-blue-500 lg:hover:bg-blue-700 lg:cursor-pointer lg:transition lg:duration-500" disabled={isLoading} size={"lg"} type="submit" 
+                            onClick={() => onSubmit}
                             >Confirm Order Completion
                             </Button>
 
