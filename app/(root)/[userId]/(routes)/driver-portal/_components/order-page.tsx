@@ -57,6 +57,7 @@ const schema = z.object({
     year: number;
     orderId: string,
     productId: string,
+    storeaddress:string,
     price: number,
     isPaid: boolean,
     dnumber: string
@@ -122,6 +123,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                     year: product.year,
                     orderId: order.id,
                     productId: product.id,
+                    storeaddress: order.store_address,
                     price: product.price,
                     isPaid: order.isPaid,
                     dnumber: order.dnumber
@@ -239,7 +241,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
             toast.success("Order Status Updated")
 
-            emailjs.send("service_miw5uzq", "template_u352hio", {
+            emailjs.send("service_miw5uzq", "template_pclaerv", {
                 to_email: email,
                 message: "Your order is now being Delivered. Track your order online, or contact us for assistance",
                 from_name: "Carspian Auto",
@@ -271,7 +273,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
             toast.success("Order Status Updated")
 
-            emailjs.send("service_miw5uzq", "template_u352hio", {
+            emailjs.send("service_miw5uzq", "template_pclaerv", {
                 to_email: email,
                 message: "Your order has been successfully delivered. Please feel free to leave a review for each product you purchased!",
                 from_name: "Carspian Auto",
@@ -352,7 +354,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
             toast.success("Order Complete")
 
-            emailjs.send("service_miw5uzq", "template_u352hio", {
+            emailjs.send("service_miw5uzq", "template_pclaerv", {
                 to_email: email,
                 message: "Your order has been successfully delivered, paid for and completed. You can still view it under completed orders if you would like to reorder it. ",
                 from_name: "Carspian Auto",

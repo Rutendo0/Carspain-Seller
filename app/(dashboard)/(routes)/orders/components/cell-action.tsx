@@ -64,7 +64,7 @@ export const    CellAction = ({data}: CellActionProps) => {
             location.reload();
 
 
-            emailjs.send("service_miw5uzq", "template_u352hio", {
+            emailjs.send("service_miw5uzq", "template_pclaerv", {
                 to_email: data,
                 message: `Your order is now  ${data.order_status}. Track your order online, or contact us for assistance`,
                 from_name: "Carspian Auto",
