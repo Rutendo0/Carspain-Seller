@@ -18,6 +18,7 @@ const DriverPage = async ({
 
 
         let allOrders : Order[] = [];
+        let di = ''
 
          for (const storeId of storeIds) {
 
@@ -35,6 +36,12 @@ const DriverPage = async ({
 
             if(filteredOrders.length > 0){
                 allOrders = allOrders.concat(filteredOrders);
+            }
+        }
+
+        for(const x of allOrders){
+            if(x.deliveryInstructions){
+                di = x.deliveryInstructions
             }
         }
 
@@ -57,7 +64,7 @@ const DriverPage = async ({
         <Separator />
         <h2 className="text-lg md:text-xl lg:text-2xl">Delivery Instructions</h2>
         <p className="w-full p-4 md:p-6 lg:p-8 m-4 shadow-md rounded-md">
-            {allOrders[0].deliveryInstructions}
+            {di}
         </p>
         <Separator />
         <OrderPage 

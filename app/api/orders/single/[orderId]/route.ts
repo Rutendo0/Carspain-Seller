@@ -143,22 +143,10 @@ export const DELETE = async (reQ: Request,
             if(store.exists()){
                 const orderRef = doc(db, "stores", storeId, "orders", params.orderId)
                 await deleteDoc(orderRef);
-                return NextResponse.json({msg: "order Deleted"});
+
             }
         }
-
-
-
-
-
-
-
-
-        return NextResponse.json({msg: "order Deleteion Failed"});
-
-
-
-
+        return NextResponse.json({msg: "order Deleted"});
     
     
     }
