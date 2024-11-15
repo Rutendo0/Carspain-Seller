@@ -361,6 +361,7 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
                 to_name: name
               }, 'NgwZzNEQN_63SAnSw')
               .then((result) => {
+                setIsloading(false)
               }, (error) => {
                 console.log(error.text);
                 toast.error('Failed to complete Order. Please contact admin.')})
@@ -378,6 +379,8 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
 
     const onSubmit = async () => {
+        event?.preventDefault()
+        setIsloading(true)
         console.log("Big Me");
         if(isPaid){
             completeOrder();
