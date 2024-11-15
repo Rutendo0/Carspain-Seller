@@ -11,6 +11,7 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { AlertModal } from "@/components/modal/alert-modal"
 import { useOrigin } from "@/hooks/use-origin"
+import emailjs from 'emailjs-com';
 
 interface CellActionProps {
     data: OrderColumns
@@ -55,12 +56,25 @@ export const    CellAction = ({data}: CellActionProps) => {
         }
     }
 
-    const onUpdate = async (data:any) => {
+    const onUpdate = async (data:any, email:string, name:string) => {
         try {
             setIsLoading(true);
             await axios.patch(`/api/orders/single/${data.id}`, data);
             router.push(`/orders`)
             location.reload();
+
+
+            emailjs.send("service_miw5uzq", "template_u352hio", {
+                to_email: data,
+                message: `Your order is now  ${data.order_status}. Track your order online, or contact us for assistance`,
+                from_name: "Carspian Auto",
+                to_name: name
+              }, 'NgwZzNEQN_63SAnSw')
+              .then((result) => {
+              }, (error) => {
+                console.log(error.text);
+                toast.error('Failed to complete Order. Please contact admin.')})
+
             toast.success("Order Updated")
             setIsLoading(false);
         } catch (error) {
@@ -91,28 +105,28 @@ export const    CellAction = ({data}: CellActionProps) => {
                     <Phone className="h-4 w-4 mr-2" />
                     Call Client
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onCopyUrl(`${origin}/${data.userId}/driver-portal`)}>
+                <DropdownMenuItem onClick={() => onCopyUrl(`${origin}/${data.userID}/driver-portal`)}>
                     <Phone className="h-4 w-4 mr-2" />
                     Copy Driver Link
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onUpdate({id: data.id, 
                     order_status: 'Delivering',
                     store_id: data.store_id
-                })}>
+                },data.clientName, data.clientEmail,)}>
                     <Car className="h-4 w-4 mr-2" />
                     Delivering
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onUpdate({id: data.id, 
                     order_status: 'Delivered',
                     store_id: data.store_id
-                })}>
+                },data.clientName, data.clientEmail,)}>
                     <Home className="h-4 w-4 mr-2" />
                     Delivered
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onUpdate({id: data.id, 
                     order_status: 'Processing',
                     store_id: data.store_id
-                })}>
+                },data.clientName, data.clientEmail,)}>
                     <Home className="h-4 w-4 mr-2" />
                     Processing
                 </DropdownMenuItem>

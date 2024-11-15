@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { storage } from "@/lib/firebase"
 import { Order, Product } from "@/types-db"
+import emailjs from 'emailjs-com';
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
@@ -65,6 +66,8 @@ const schema = z.object({
 
 export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
+    
+
     if(!initialData || initialData.length == 0){
         return <>
         <div className="flex items-center justify-center">
@@ -72,6 +75,9 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
         </div>
         </>
     }
+
+    const name = initialData[0].clientName
+    const email = initialData[0].clientEmail
 
     const [open, setOpen] = useState(false);
     const [Dopen, setDOpen] = useState(false);
@@ -233,6 +239,17 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
 
             toast.success("Order Status Updated")
 
+            emailjs.send("service_miw5uzq", "template_u352hio", {
+                to_email: email,
+                message: "Your order is now being Delivered. Track your order online, or contact us for assistance",
+                from_name: "Carspian Auto",
+                to_name: name
+              }, 'NgwZzNEQN_63SAnSw')
+              .then((result) => {
+              }, (error) => {
+                console.log(error.text);
+                toast.error('Failed to complete Order. Please contact admin.')})
+
             setDeliveringOpen(false)
             setIsDelivering(true);
         }
@@ -253,6 +270,17 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
             await axios.patch(`/api/orders/${userId}`, data);
 
             toast.success("Order Status Updated")
+
+            emailjs.send("service_miw5uzq", "template_u352hio", {
+                to_email: email,
+                message: "Your order has been successfully delivered. Please feel free to leave a review for each product you purchased!",
+                from_name: "Carspian Auto",
+                to_name: name
+              }, 'NgwZzNEQN_63SAnSw')
+              .then((result) => {
+              }, (error) => {
+                console.log(error.text);
+                toast.error('Failed to complete Order. Please contact admin.')})
 
             setDeliveredOpen(false)
             setIsDelivered(true);
@@ -323,6 +351,17 @@ export const OrderPage = ({initialData, userId}: OrderFormProps, ) => {
             await axios.patch(`/api/orders/${userId}`, data);
 
             toast.success("Order Complete")
+
+            emailjs.send("service_miw5uzq", "template_u352hio", {
+                to_email: email,
+                message: "Your order has been successfully delivered, paid for and completed. You can still view it under completed orders if you would like to reorder it. ",
+                from_name: "Carspian Auto",
+                to_name: name
+              }, 'NgwZzNEQN_63SAnSw')
+              .then((result) => {
+              }, (error) => {
+                console.log(error.text);
+                toast.error('Failed to complete Order. Please contact admin.')})
 
 
             setIsloading(false)

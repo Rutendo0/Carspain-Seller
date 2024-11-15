@@ -85,13 +85,15 @@ export interface Order {
     orderItems: Product[],
     address: string,
     order_status: string,
+    clientName: string,
+    clientEmail: string,
     createdAt: Timestamp;
     updatedAt: Timestamp;
     method: string;
     store_name: string;
     store_address: string;
     store_id: string;
-    userId: string;
+    userID: string;
     deliveryInstructions: string;
     dnumber: string
 }

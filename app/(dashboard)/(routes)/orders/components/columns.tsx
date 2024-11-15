@@ -15,12 +15,14 @@ export type OrderColumns = {
   totalPrice : string,
   images: string[],
   isPaid: boolean;
+  clientName: string,
+  clientEmail: string,
   store_name: string,
   createdAt: string,
   order_status: string,
   store_id: string,
   store_address: string,
-  userId: string,
+  userID: string,
   deliveryIn: string
 }
 export const columns: ColumnDef<OrderColumns>[] = [
