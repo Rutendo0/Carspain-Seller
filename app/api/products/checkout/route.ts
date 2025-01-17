@@ -8,12 +8,14 @@ import {
     addDoc,
     collection,
     doc,
+    setDoc,
     getDoc,
     getDocs,
     serverTimestamp,
     updateDoc,
 } from "firebase/firestore"
-import { url } from "inspector"
+
+
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -28,9 +30,24 @@ export const OPTIONS = async () => {
 export const POST = async (
     req: Request
 ) => {
-    const {products, userId, method} = await req.json();
+    const {                        
+        products,
+        userID,
+        clientName,
+        clientEmail,
+        method,
+        address,
+        baddress,
+        number,
+        deliveryInstructions,
+        total
+    } = await req.json();
+
+
     if(method == 'cash'){
-        console.log("cash");
+        console.log("cash-------------------");
+
+
     
         const storesSnapshot = await getDocs(collection(db, "stores"));
         const storeIds = storesSnapshot.docs.map(doc => doc.id);
@@ -40,34 +57,56 @@ export const POST = async (
     
     
             let holder : Product[] = [];
+            let name = '';
+            let storeaddress = '';
     
             // Step 2: Iterate through each store to find the product
             for (const product of products) {
                 const productDoc = await getDoc(doc(db, "stores", storeId, "products", product.id));
+                const nameDoc = await getDoc(doc(db, "stores", storeId));
+                if(nameDoc.exists()){
+                    const store = nameDoc.data() as Store
+                    name = store.name
+                    storeaddress = store.address
+                }
                 if (productDoc.exists()) {
+                    if(product.stock >= product.qty){
+                        const value = product.stock - product.qty
+                        await updateDoc(doc(db, "stores", storeId, "products", product.id), 
+                        {
+                            ...product,
+                            stock: value,
+                            updatedAt: serverTimestamp(),
+                        });
+
+                    }
                     holder.push(product);
                 }
             }
-
             if(holder.length > 0){
-                const sn = (await getDoc(doc(db, "stores", storeId))).data() as Store;
-                const storeNmae = sn.name;
-        
+                console.log(holder);
+            
                 const orderData = {
-                    store_name: storeNmae,
-                    store_id: storeId,
                     isPaid: false,
                     orderItems: holder,
-                    userId,
+                    userID: userID,
+                    address: address,
+                    baddress: baddress,
+                    number: number,
+                    clientName: clientName,
+                    clientEmail: clientEmail,
+                    deliveryInstructions: deliveryInstructions,
+                    sumTotal: total,
+                    store_id: storeId,
+                    store_name: name,
                     order_status: "Processing",
                     createdAt: serverTimestamp(),
-                    method: "cash"
                 }
         
                 const orderRef = await addDoc(
                     collection(db, "stores", storeId, "orders"),
                     orderData
-                )
+                );
                 const id = orderRef.id;
         
                 await updateDoc(doc(db, "stores", storeId, "orders", id), 
@@ -76,8 +115,10 @@ export const POST = async (
                     id,
                     updatedAt: serverTimestamp(),
                 });
-            }
 
+                
+            }
+    
 
     
         }
@@ -85,7 +126,7 @@ export const POST = async (
     
     
     
-        return NextResponse.json('success')
+        return NextResponse.json(products,{headers: corsHeaders})
 
     }
     else{
@@ -104,54 +145,91 @@ export const POST = async (
     
     
             let holder : Product[] = [];
+            let name = '';
+            let storeaddress = '';
     
             // Step 2: Iterate through each store to find the product
             for (const product of products) {
                 const productDoc = await getDoc(doc(db, "stores", storeId, "products", product.id));
+                const nameDoc = await getDoc(doc(db, "stores", storeId));
+                if(nameDoc.exists()){
+                    const store = nameDoc.data() as Store
+                    name = store.name
+                    storeaddress = store.address
+                }
                 if (productDoc.exists()) {
+                    if(product.stock >= product.qty){
+                        const value = product.stock - product.qty
+                        await updateDoc(doc(db, "stores", storeId, "products", product.id), 
+                        {
+                            ...product,
+                            stock: value,
+                            updatedAt: serverTimestamp(),
+                        });
+
+                    }
                     holder.push(product);
                 }
             }
     
-            const orderData = {
-                isPaid: false,
-                orderItems: holder,
-                userId,
-                order_status: "Processing",
-                createdAt: serverTimestamp(),
-                method: "card"
+
+
+            if(holder.length > 0){
+                console.log(holder);
+                const orderData = {
+                    isPaid: false,
+                    orderItems: holder,
+                    userID: userID,
+                    address: address,
+                    baddress: baddress,
+                    number: number,
+                    clientName: clientName,
+                    clientEmail: clientEmail,
+                    deliveryInstructions: deliveryInstructions,
+                    sumTotal: total,
+                    store_id: storeId,
+                    store_name: name,
+                    order_status: "Processing",
+                    createdAt: serverTimestamp(),
+                }
+                
+                const orderRef = await addDoc(
+                    collection(db, "stores", storeId, "orders"),
+                    orderData
+                )
+                const id = orderRef.id;
+    
+                holder.forEach((item: Product) => {
+                    line_items.push({
+                        
+                        quantity: item.qty,
+                        price_data : {
+                            currency: "USD",
+                            product_data: {
+                                name: item.name,
+                                metadata: {
+                                    store_id: storeId,
+                                    order_id: id,
+                                },
+                            },
+                            unit_amount : Math.round(item.price * 100),
+                        }
+                    });
+                });
+                console.log(line_items)
+                    
+                await updateDoc(doc(db, "stores", storeId, "orders", id), 
+                {
+                    ...orderData,
+                    id,
+                    updatedAt: serverTimestamp(),
+                });
+    
             }
     
-            const orderRef = await addDoc(
-                collection(db, "stores", storeId, "orders"),
-                orderData
-            )
-            const id = orderRef.id;
-    
-            holder.forEach((item: Product) => {
-                line_items.push({
-                    quantity: item.qty,
-                    price_data : {
-                        currency: "USD",
-                        product_data: {
-                            name: item.name,
-                            metadata: {
-                                store_id: storeId,
-                                order_id: id,
-                            },
-                        },
-                        unit_amount : Math.round(item.price * 100),
-                    }
-                });
-            });
-    
-            await updateDoc(doc(db, "stores", storeId, "orders", id), 
-            {
-                ...orderData,
-                id,
-                updatedAt: serverTimestamp(),
-            });
-    
+
+
+
     
     
     
@@ -174,10 +252,9 @@ export const POST = async (
     
     
     
-        return NextResponse.json({url: session.url}, {headers: corsHeaders})
-
+        return NextResponse.json(products, {headers: corsHeaders})
     }
-
+    return NextResponse.json(products,{headers: corsHeaders})
 };
 //Each order must be set individually. The route must receive a list of products, and subsequently go through each product to 
 // identify which store it belongs to. This storeId is then used with the above process as we know how.

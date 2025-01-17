@@ -21,14 +21,16 @@ export const GET = async (reQ: Request,
 
             const ordersQuery = query(
                 collection(doc(db, "stores", storeId), "orders"),
-                where("userId", "==", params.userId)
+                where("userID", "==", params.userId)
             );
 
 
 
             const ordersSnapshot = await getDocs(ordersQuery);
             const orders = ordersSnapshot.docs.map(doc => doc.data() as Order);
-            allOrders = allOrders.concat(orders);
+
+            const filteredOrders = orders.filter(order => order.order_status !== "Complete");
+            allOrders = allOrders.concat(filteredOrders);
         }
 
 
@@ -45,58 +47,3 @@ export const GET = async (reQ: Request,
 };
 
 
-
-
-
-export const PATCH = async (reQ: Request,
-    {params} : {params: { userId : string}}
-) => {
-    try {
-        const {userId} = auth()
-        const body = await reQ.json()
-    
-        if(!userId){
-            return new NextResponse("Unauthorized", {status: 400})
-        }
-    
-        const {order_status, isPaid} = body;
-    
-    
-        if(!order_status){
-            return new NextResponse("Order Gone Missing", {status: 400})
-        }
-
-
-
-        if(!params.userId){
-            return new NextResponse("No order specified", {status: 400})
-        }
-
-
-        const storesSnapshot = await getDocs(collection(db, "stores"));
-        const storeIds = storesSnapshot.docs.map(doc => doc.id);
-
-        for (const storeId of storeIds) {
-            const ordersRef = collection(db, "stores", storeId, "orders");
-            const q = query(ordersRef, where("userId", "==", params.userId));
-
-            const querySnapshot = await getDocs(q);
-            for (const doc of querySnapshot.docs) {
-                await updateDoc(doc.ref, { order_status, isPaid });
-            }
-
-        }
-
-
-
-        return NextResponse.json("Success", {status: 200});
-        
-    
-    }
-   
-
- catch (error) {
-    console.log(`ORDER_PATCH:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
-};

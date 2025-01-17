@@ -55,8 +55,9 @@ export const POST = async (req: Request) => {
 
             // Iterate through each line item
             for (const item of lineItems.data) {
-                const storeId = item.price?.metadata.store_id;
-                const orderId = item.price?.metadata.order_id;
+
+                const storeId = item.price?.metadata.storeId
+                const orderId = item.price?.metadata?.order_id;
                 console.log(session)
 
 
@@ -65,9 +66,11 @@ export const POST = async (req: Request) => {
                     await updateDoc(storeRef, {
                         isPaid: true,
                         address: `${session.customer_details?.address?.line1}, ${session.customer_details?.address?.line2}, ${session.customer_details?.address?.city}`,
-                        phone: session.customer_details?.phone,
+                        number: session.customer_details?.phone,
                         updatedAt: serverTimestamp(),
                     });
+
+                    
                 } else {
                     console.error("Missing store ID or order ID in line item metadata.");
                 }

@@ -16,7 +16,7 @@ const Overview = ({data}: OverviewProps) => {
                 tickLine={false}
                 axisLine={false}/>
                 <YAxis 
-                tickFormatter={(v)=>`Zig: ${v}`}
+                tickFormatter={(v)=>`$: ${v}`}
                 stroke="#555"
                 fontSize={12}
                 tickLine={false}

@@ -46,7 +46,7 @@ export const PATCH = async (reQ: Request,
 
      const brand = (
         await getDoc(
-            doc(db, "data", "wModRJCDon6XLQYmnuPT",  "brands", params.brandId)
+            doc(db, "data", "wModRJCDon6XLQYmnuPT", "brands", params.brandId)
         )
      ).data() as Brand;
 
@@ -80,7 +80,7 @@ export const DELETE = async (reQ: Request,
             return new NextResponse("No brand selected", {status: 400})
         }
 
-     const brandRef = doc(db, "data", "wModRJCDon6XLQYmnuPT", "brands", params.brandId)
+     const brandRef = doc(db, "data", "wModRJCDon6XLQYmnuPT",  "brands", params.brandId)
 
      await deleteDoc(brandRef);
 

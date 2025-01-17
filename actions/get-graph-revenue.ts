@@ -7,43 +7,31 @@ interface GraphData {
     total: number
 }
 
-export const getGraphRevenue = async () => {
+export const getGraphRevenue = async (storeId: string) => {
+    const orderData = (
+        await getDocs(collection(doc(db, "stores", storeId), "orders"))
+    ).docs.map((i) => i.data()) as Order[];
 
-
-    const storesSnapshot = await getDocs(collection(db, "stores"));
-    const storeIds = storesSnapshot.docs.map(doc => doc.id);
+    const paidOrders = orderData.filter((order) => order.isPaid);
 
     const monthlyR: {[key: string]: number} = {};
 
+    for (const order of paidOrders) {
+        const month = order.createdAt?.toDate().toLocaleDateString("en-US", {month: "short"});
 
-    for (const storeId of storeIds) {
+        if(month){
+            let orderRev = 0;
 
-        const orderData = (
-            await getDocs(collection(doc(db, "stores", storeId), "orders"))
-        ).docs.map((i) => i.data()) as Order[];
-    
-        const paidOrders = orderData.filter((order) => order.isPaid);
-    
-
-    
-        for (const order of paidOrders) {
-            const month = order.createdAt?.toDate().toLocaleDateString("en-US", {month: "short"});
-    
-            if(month){
-                let orderRev = 0;
-    
-                for (const item of order.orderItems){
-                    orderRev += item.price
-                }
-    
-                monthlyR[month] = (monthlyR[month] || 0) + orderRev;
+            for (const item of order.orderItems){
+                orderRev += item.price
             }
-    
-    
-        };
 
-    }
+            monthlyR[month] = (monthlyR[month] || 0) + orderRev;
+            console.log(monthlyR['Jul'])
+        }
 
+
+    };
 
     const monthMap : {[key: string]:number} = {
         Jan: 0,

@@ -13,7 +13,7 @@ export const POST = async(req: Request) => {
             return new NextResponse("Unauthorized", {status: 400})
         }
 
-        const {name} = body;
+        const {name, address, store_owner, ownerID, tax_clearance, number} = body;
 
         if(!name){
             return new NextResponse("Store Name Missing", {status: 400})
@@ -21,11 +21,18 @@ export const POST = async(req: Request) => {
 
         const storeData = {
             name,
+            address,
+            store_owner, 
+            ownerID,
+            tax_clearance,
+            number,
             userId,
             createdAt: serverTimestamp(),
         }
 
         const storeRef = await addDoc(collection(db, "stores"), storeData);
+
+        console.log(storeData);
 
         const id = storeRef.id
 

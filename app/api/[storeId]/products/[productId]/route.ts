@@ -19,7 +19,7 @@ export const PATCH = async (reQ: Request,
         const {
             name,
             price,
-            OEM,
+            Code,
             images,
             isFeatured,
             isArchived,
@@ -27,6 +27,7 @@ export const PATCH = async (reQ: Request,
             industry,
             brand,
             model,
+            stock,
             year,
         } = body;
     
@@ -34,8 +35,8 @@ export const PATCH = async (reQ: Request,
         if(!name){
             return new NextResponse("product Name Missing", {status: 400})
         }
-        if(!OEM){
-            return new NextResponse("OEM definition Missing", {status: 400})
+        if(!Code){
+            return new NextResponse("Code definition Missing", {status: 400})
         }
 
 
@@ -53,6 +54,9 @@ export const PATCH = async (reQ: Request,
 
         if(store.exists()){
             let storeData = store.data()
+            if(storeData?.userId !== userId){
+                return new NextResponse("Unauthorized Access", {status: 500})
+            }
         }
 
      const productRef = await getDoc(
@@ -65,7 +69,7 @@ export const PATCH = async (reQ: Request,
                 ...productRef.data(),
                 name,
                 price,
-                OEM,
+                Code,
                 images,
                 isFeatured,
                 isArchived,
@@ -73,6 +77,7 @@ export const PATCH = async (reQ: Request,
                 industry,
                 brand,
                 model,
+                stock,
                 year,
                 updatedAt: serverTimestamp(),
             }
@@ -125,6 +130,9 @@ export const DELETE = async (reQ: Request,
 
         if(store.exists()){
             let storeData = store.data()
+            if(storeData?.userId !== userId){
+                return new NextResponse("Unauthorized Access", {status: 500})
+            }
         }
 
      const productRef = doc(db, "stores", params.storeId, "products", params.productId);

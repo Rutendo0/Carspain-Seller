@@ -3,17 +3,11 @@ import { Timestamp } from "firebase/firestore";
 export interface Store {
     id: string;
     name: string;
-    userId: string;
     address: string;
+    userId: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
-    store_owner: string;
-    tax_clearance: string;
-    ownerID: string;
-    number: string;
 }
-
-
 
 
 export interface Billboards {
@@ -65,6 +59,7 @@ export interface Product {
     OEM: string;
     price: number;
     qty?: number;
+    stock: number;
     images: {url: string}[];
     isFeatured?: boolean;
     isArchived: boolean;
@@ -81,19 +76,43 @@ export interface Product {
 export interface Order {
     id: string;
     isPaid: boolean;
-    number: string,
+    phone: string,
     orderItems: Product[],
     address: string,
+    store_address: string,
     order_status: string,
-    clientName: string,
-    clientEmail: string,
     createdAt: Timestamp;
     updatedAt: Timestamp;
-    method: string;
-    store_name: string;
-    store_address: string;
-    store_id: string;
+}
+
+export interface Review {
+    id: string;
+    comment: string;
     userID: string;
-    deliveryInstructions: string;
-    dnumber: string
+    userName: string;
+    productID: string;
+    createdAt: Timestamp;
+
+}
+
+export interface Wishlist {
+    product: string,
+    userId: string,
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+
+
+export interface Part {
+    id: string,
+    Name: string,
+    part_code: string,
+    Category: string,
+    Make: string,
+    Model: string,
+    Year: number,
+    Photo: string,
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+
 }

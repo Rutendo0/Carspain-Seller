@@ -17,7 +17,7 @@ export const POST = async (reQ: Request,
     
         const {name,
             price,
-            OEM,
+            Code,
             images,
             isFeatured,
             isArchived,
@@ -25,6 +25,7 @@ export const POST = async (reQ: Request,
             industry,
             brand,
             model,
+            stock,
             year
         } = body;
     
@@ -43,7 +44,7 @@ export const POST = async (reQ: Request,
             return new NextResponse("No category selected", {status: 400})
         }
 
-        if(!OEM){
+        if(!Code){
             return new NextResponse("No OEM specified", {status: 400})
         }
 
@@ -61,7 +62,9 @@ export const POST = async (reQ: Request,
 
         if(store.exists()){
             let storeData = store.data()
-
+            if(storeData?.userId !== userId){
+                return new NextResponse("Unauthorized Access", {status: 500})
+            }
         }
 
 
@@ -69,7 +72,7 @@ export const POST = async (reQ: Request,
         const ProductsData = {
             name,
             price,
-            OEM,
+            Code,
             images,
             isFeatured,
             isArchived,
@@ -77,6 +80,7 @@ export const POST = async (reQ: Request,
             industry,
             brand,
             model,
+            stock,
             year,
             createdAt: serverTimestamp()
         }

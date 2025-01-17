@@ -2,9 +2,9 @@ import { db } from "@/lib/firebase"
 import { Order } from "@/types-db"
 import { collection, doc, getDocs } from "firebase/firestore"
 
-export const getRevenue = async () => {
+export const getRevenue = async (storeId: string) => {
     const ordersData = (
-        await getDocs(collection(doc(db, "orders"), "orders"))
+        await getDocs(collection(doc(db, "stores", storeId), "orders"))
     ).docs.map((doc) => doc.data()) as Order[];
 
     const paidOrders = ordersData.filter((order) => order.isPaid);

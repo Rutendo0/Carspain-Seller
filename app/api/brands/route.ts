@@ -29,7 +29,7 @@ export const POST = async (reQ: Request,
         }
 
         const BrandRef = await addDoc(
-            collection(db,"data", "wModRJCDon6XLQYmnuPT", "brands"),
+            collection(db,"data","wModRJCDon6XLQYmnuPT", "brands"),
             BrandData
         );
 

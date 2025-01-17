@@ -27,6 +27,7 @@ export default function RootLayout({
     <ClerkProvider>
     <html lang="en">
       <body className={poppins.className}>
+
         <ModalProvider></ModalProvider>
         <ToastProvider/>
         {children}</body>

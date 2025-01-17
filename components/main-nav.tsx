@@ -14,54 +14,25 @@ export const MainNav = ({className, ...props}: React.HtmlHTMLAttributes<HTMLElem
 
     const routes = [
         {
-            href: `/`,
+            href: `/${params.storeId}`,
             label: "Overview",
-            active: pathname === `/`,
+            active: pathname === `/${params.storeId}`,
         },
+
         {
-            href: `/billboards`,
-            label: "Billboards",
-            active: pathname === `/billboards`,
-        },
-        {
-            href: `/categories`,
-            label: "Categories",
-            active: pathname === `/categories`,
-        },
-        {
-            href: `/industries`,
-            label: "Industries",
-            active: pathname === `/industries`,
-        },
-        {
-            href: `/brands`,
-            label: "Brands",
-            active: pathname === `/brands`,
-        },
-        {
-            href: `/models`,
-            label: "Models",
-            active: pathname === `/models`,
-        },
-        {
-            href: `/products`,
+            href: `/${params.storeId}/products`,
             label: "Products",
-            active: pathname === `/products`,
+            active: pathname === `/${params.storeId}/products`,
         },
         {
-            href: `/orders`,
+            href: `/${params.storeId}/orders`,
             label: "Orders",
-            active: pathname === `/orders`,
+            active: pathname === `/${params.storeId}/orders`,
         },
         {
-            href: `/stores`,
-            label: "Stores",
-            active: pathname === `/stores`,
-        },
-        {
-            href: `/settings`,
+            href: `/${params.storeId}/settings`,
             label: "Settings",
-            active: pathname === `/settings`,
+            active: pathname === `/${params.storeId}/settings`,
         },
     ];
 
