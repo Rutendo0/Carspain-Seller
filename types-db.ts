@@ -106,7 +106,7 @@ export interface Wishlist {
 export interface Part {
     id: string,
     Name: string,
-    part_code: string,
+    PartCode: string,
     Category: string,
     Make: string,
     Model: string,

@@ -50,7 +50,7 @@ export const ProductForm = ({initialData,
     industries, parts
 }: ProductFormProps) => {
 
-    console.log(parts);
+
 
 
 
@@ -151,8 +151,14 @@ export const ProductForm = ({initialData,
     var [currentYear, setCurrentYear] = useState(0)
     // Initialize the state with a Product type 
     const [product, setProduct] = useState<Product | null>(null);
-    const [partHolder, setPartHolder] = useState<Part[]>(parts)
-    const makes = parts.reduce<string[]>((acc, part) => { if (!acc.includes(part.Make)) { acc.push(part.Make); } return acc; }, []);
+    
+    const invalidModelCount = parts.filter(part => part.Model && part.Model.trim() !== "" && part.PartCode != "");
+    const [partHolder, setPartHolder] = useState<Part[]>(invalidModelCount)
+    const make = parts[0].Make;
+
+
+    console.log(invalidModelCount.length)
+    
 
 
 
@@ -180,9 +186,6 @@ export const ProductForm = ({initialData,
     <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} 
                     className="w-full space-y-8">
-
-
-                        {/* Images */}
                         <FormField
                         control={form.control}
                         name="images"
@@ -190,17 +193,7 @@ export const ProductForm = ({initialData,
                             <FormItem>
                                 <FormLabel>Product Image</FormLabel>
                                 <FormControl>
-                                    {/* <ImagesUpload
-                                    value={field.value.map(image => image.url)}
-                                    onChange={(urls) => {
-                                        field.onChange(urls.map((url) =>({url})))
-                                    }}
-                                    onRemove={(url) =>{
-                                        field.onChange(
-                                            field.value.filter((current) => current.url !== url)
-                                        );
-                                    }}
-                                    /> */}
+
                                     <div className="w-24 h-24 relative ">
 
                                     <Image  src={imageurl}  fill alt="product-image" className="shadow-md rounded-md" /></div>
@@ -236,24 +229,18 @@ export const ProductForm = ({initialData,
                                                 placeholder="Select a Brand" />
                                             </SelectTrigger>
                                         </FormControl>
-                                            <SelectContent>
-                                                {makes
-                                                .map((item, index) => (
-                                                    <SelectItem
-                                                    key={index}
-                                                    value={item}>
-                                                        {item}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
+                                        <SelectContent>
+                                    <SelectItem key="0" value={make}>
+                                        {make}
+                                    </SelectItem>
+                                </SelectContent>
+
                                         
                                     </Select>
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
                         )}/>
-
-
 
 
 <FormField control={form.control} name="model"
@@ -265,7 +252,8 @@ export const ProductForm = ({initialData,
                                     disabled={isLoading}
                                     onValueChange={(e) => {
 
-                                        setPartHolder(partHolder.filter(item => item.Model === e))
+                                        setPartHolder(partHolder.filter(item => item.Model.replace(/,$/, '') === e))
+                                        console.log(partHolder.length)
                                            
                                         field.onChange(e)
                                     }}
@@ -288,7 +276,6 @@ export const ProductForm = ({initialData,
                                 <FormMessage/>
                             </FormItem>
                         )}/>
-
 
 
                     <FormField control={form.control} name="category"
@@ -324,9 +311,6 @@ export const ProductForm = ({initialData,
                         )}/>
 
 
-
-
-
                         <FormField control={form.control} name="name"
                         render={({field}) => (
                             <FormItem>
@@ -359,6 +343,7 @@ export const ProductForm = ({initialData,
                             </FormItem>
                         )}/>
 
+
                 <FormField control={form.control} name="Code"
                         render={({field}) => (
                             <FormItem>
@@ -367,11 +352,11 @@ export const ProductForm = ({initialData,
                                     <Select
                                     disabled={isLoading}
                                     onValueChange={(e) => {
-                                        setPartHolder(partHolder.filter(item => item.part_code === e))
+                                        setPartHolder(partHolder.filter(item => item.PartCode === e))
                                         setimageurl(`https:${partHolder[0].Photo}`)
                                         console.log(partHolder[0].Photo)
 
-                                        const test = partHolder.find(item => item.part_code === e)
+                                        const test = partHolder.find(item => item.PartCode === e)
                                         if(test){
                                             setCurrentYear(test?.Year)
                                         }
@@ -390,12 +375,12 @@ export const ProductForm = ({initialData,
                                         </FormControl>
                                             <SelectContent>
                                                 {partHolder
-                                                // .filter(item => item.part_code === codec)
+                                  
                                                 .map(item => (
                                                     <SelectItem
                                                     key={item.id}
-                                                    value={item.part_code}>
-                                                        {item.part_code}
+                                                    value={item.PartCode}>
+                                                        {item.PartCode}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -405,6 +390,7 @@ export const ProductForm = ({initialData,
                                 <FormMessage/>
                             </FormItem>
                         )}/>
+
 
                         <FormField control={form.control} name="price"
                         render={({field}) => (
@@ -419,9 +405,6 @@ export const ProductForm = ({initialData,
                                 <FormMessage/>
                             </FormItem>
                         )}/>
-
-
-
 
 
                         <FormField control={form.control} name="industry"
@@ -458,28 +441,6 @@ export const ProductForm = ({initialData,
                             </FormItem>
                         )}/>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                         <FormField control={form.control} name="year"
                         render={({field}) => (
                             <FormItem>
@@ -496,9 +457,6 @@ export const ProductForm = ({initialData,
                         )}/>
 
 
-
-
-
                     <FormField control={form.control} name="stock"
                         render={({field}) => (
                             <FormItem>
@@ -511,7 +469,6 @@ export const ProductForm = ({initialData,
                                 <FormMessage/>
                             </FormItem>
                         )}/>
-
 
 
                         <FormField control={form.control} name="isFeatured"
@@ -532,8 +489,6 @@ export const ProductForm = ({initialData,
                             </FormItem>
                         )}/>
 
-
-
                     <FormField control={form.control} name="isArchived"
                         render={({field}) => (
                             <FormItem className="flex flex-row items-start space-x-3 
@@ -551,12 +506,6 @@ export const ProductForm = ({initialData,
                                 
                             </FormItem>
                         )}/>
-
-
-
-
-                        
-
 
                         </div>
                             <Button disabled={isLoading} type="submit" size={"sm"}

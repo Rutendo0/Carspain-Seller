@@ -11,6 +11,9 @@ const nextConfig = {
             {
                 hostname: "dz310nzuyimx0.cloudfront.net",
             },
+            {
+                hostname: "image-cdn.beforward.jp",
+            },
         ],
     },
 };

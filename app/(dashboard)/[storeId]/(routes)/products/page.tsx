@@ -1,4 +1,4 @@
-import { collection, doc, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs, limit, query } from "firebase/firestore";
 import {format} from "date-fns"
 import {  ProductClient } from "./components/client";
 import { db } from "@/lib/firebase";
@@ -12,12 +12,14 @@ import toast from "react-hot-toast";
 
 const ProductsPage = async ({params} : {params : {storeId: string}}) => {
 
-
     const ProductsData = (
         await getDocs(
-            collection(doc(db, "stores", params.storeId), "products")
+          query(
+            collection(doc(db, "stores", params.storeId), "products"),
+            limit(20) // Limits the number of records to 20
+          )
         )
-    ).docs.map(doc => doc.data()) as Product[];
+      ).docs.map(doc => doc.data()) as Product[];
 
     const user = await currentUser()
     const email = user?.primaryEmailAddress?.emailAddress;
