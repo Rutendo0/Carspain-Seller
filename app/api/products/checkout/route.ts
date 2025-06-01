@@ -1,5 +1,6 @@
 import {Stripe} from "stripe"
-
+import { initializeApp } from "firebase/app";
+import { getMessaging } from "firebase/messaging";
 import { NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { db } from "@/lib/firebase"
@@ -37,9 +38,12 @@ export const POST = async (
         clientEmail,
         method,
         address,
+        lat,
+        lng,
         baddress,
         number,
         deliveryInstructions,
+        deliveryDate,
         total
     } = await req.json();
 
@@ -92,13 +96,18 @@ export const POST = async (
                     userID: userID,
                     address: address,
                     baddress: baddress,
+                    lat: lat,
+                    lng: lng,
                     number: number,
                     clientName: clientName,
                     clientEmail: clientEmail,
                     deliveryInstructions: deliveryInstructions,
+                    deliveryDate: deliveryDate,
                     sumTotal: total,
                     store_id: storeId,
                     store_name: name,
+                    store_address:storeaddress,
+                    approved: "Pending",
                     order_status: "Processing",
                     createdAt: serverTimestamp(),
                 }
@@ -115,6 +124,8 @@ export const POST = async (
                     id,
                     updatedAt: serverTimestamp(),
                 });
+
+
 
                 
             }
@@ -190,6 +201,7 @@ export const POST = async (
                     store_id: storeId,
                     store_name: name,
                     order_status: "Processing",
+                    approved: "Pending",
                     createdAt: serverTimestamp(),
                 }
                 

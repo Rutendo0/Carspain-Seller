@@ -83,6 +83,8 @@ export interface Order {
     order_status: string,
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    approved: string;
+    store_id: string;
 }
 
 export interface Review {
@@ -93,6 +95,18 @@ export interface Review {
     productID: string;
     createdAt: Timestamp;
 
+}
+export interface ReturnData {
+    id?: string; // This will be added when the document is created in Firestore
+    orderId: string;
+    userId: string;
+    originalOrder: Order;
+    description: string;
+    images: string[];
+    status: 'pending' | 'approved' | 'rejected' | 'processed' | 'delivering' | 'returned'; 
+    createdAt: Timestamp | Date;
+    updatedAt: Timestamp | Date;
+    returnDeadline: string;
 }
 
 export interface Wishlist {

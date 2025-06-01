@@ -2,6 +2,7 @@ import exp from "constants";
 import {getApp, getApps, initializeApp} from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,5 +17,9 @@ const firebaseConfig = {
 const app = getApps.length > 0 ? getApp() : initializeApp(firebaseConfig)
 const db = getFirestore(app)
 const storage = getStorage(app)
+// const messaging = getMessaging(app)
+
+// const URL = `${process.env.MESSAGINGKEY}`;
+// getToken(messaging, {vapidKey: URL});
 
 export {db, storage}

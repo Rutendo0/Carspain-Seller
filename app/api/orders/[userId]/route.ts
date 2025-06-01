@@ -29,7 +29,7 @@ export const GET = async (reQ: Request,
             const ordersSnapshot = await getDocs(ordersQuery);
             const orders = ordersSnapshot.docs.map(doc => doc.data() as Order);
 
-            const filteredOrders = orders.filter(order => order.order_status !== "Complete");
+            const filteredOrders = orders;
             allOrders = allOrders.concat(filteredOrders);
         }
 

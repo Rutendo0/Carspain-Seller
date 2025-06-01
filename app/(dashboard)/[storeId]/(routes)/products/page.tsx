@@ -39,7 +39,7 @@ const ProductsPage = async ({params} : {params : {storeId: string}}) => {
             model: item.model,
             images: item.images,
             year: item.year ? format(item.year, "yyyy") : "",
-            createdAt: item.createdAt ? format(item.createdAt.toDate(), "MMMM dd, yyyy") : ""
+            createdAt: item.createdAt ? format(item.createdAt.seconds, "MMMM dd, yyyy") : ""
         })
     )
 

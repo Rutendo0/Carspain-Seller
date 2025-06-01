@@ -40,6 +40,8 @@ const OrdersPage = async ({params} : {params : {storeId: string}}) => {
                     return total
                 }, 0)
             ),
+            approved: item.approved,
+            store_id: item.store_id,
             images: item.orderItems.map(item => item.images[0].url),
             createdAt: item.createdAt ? format(item.createdAt.toDate(), "MMMM dd, yyyy") : ""
         })

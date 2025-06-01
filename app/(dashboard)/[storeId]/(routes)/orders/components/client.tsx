@@ -4,30 +4,75 @@ import { Heading } from "@/components/heading"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import { Separator } from "@/components/ui/separator"
-import { Billboards } from "@/types-db"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { OrderColumns, columns } from "./columns"
-import ApiList from "@/components/api_list"
-
 
 interface OrderClientProps {
   data: OrderColumns[]
 }
 
-export const OrderClient = ({data}: OrderClientProps) => {
-    const params = useParams()
-    const router = useRouter()
-  return (<>
-  <div className="flex items-center justify-between">
-    <Heading title={`Orders (${data.length})`}
-    description="Manage Orders for your store"/>
-    
-  </div>
-  <Separator/>
-  <DataTable columns={columns} data={data} searchKey="name"/>
+export const OrderClient = ({ data }: OrderClientProps) => {
+  const params = useParams()
+  const router = useRouter()
 
+  // Filter data based on approval status
+  const pendingOrders = data.filter(order => order.approved !== "Approved")
+  const approvedOrders = data.filter(order => order.approved === "Approved")
+  const completeOrders = data.filter(order => order.approved === "Complete")
 
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <Heading 
+          title="Orders" 
+          description="Manage orders for your store"
+        />
+        <Button onClick={() => router.push(`/${params.storeId}/orders/new`)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add New
+        </Button>
+      </div>
+      <Separator className="my-4" />
 
-  </>);
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pending">
+            Pending ({pendingOrders.length})
+          </TabsTrigger>
+          <TabsTrigger value="approved">
+            Approved ({approvedOrders.length})
+          </TabsTrigger>
+          <TabsTrigger value="complete">
+            Complete ({completeOrders.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending">
+          <DataTable 
+            columns={columns} 
+            data={pendingOrders} 
+            searchKey="phone"
+          />
+        </TabsContent>
+
+        <TabsContent value="approved">
+          <DataTable 
+            columns={columns} 
+            data={approvedOrders} 
+            searchKey="phone"
+          />
+        </TabsContent>
+
+        <TabsContent value="complete">
+          <DataTable 
+            columns={columns} 
+            data={completeOrders} 
+            searchKey="phone"
+          />
+        </TabsContent>
+      </Tabs>
+    </>
+  )
 }
