@@ -15,6 +15,7 @@ import {
     serverTimestamp,
     updateDoc,
 } from "firebase/firestore"
+import axios from "axios";
 
 
 
@@ -106,7 +107,7 @@ export const POST = async (
                     sumTotal: total,
                     store_id: storeId,
                     store_name: name,
-                    store_address:storeaddress,
+                    store_address: storeaddress || '', // Fallback to empty string if undefined
                     approved: "Pending",
                     order_status: "Processing",
                     createdAt: serverTimestamp(),
@@ -238,6 +239,23 @@ export const POST = async (
                 });
     
             }
+
+
+
+            await axios.post('https://example.com/api', 
+                { dataKey: 'dataValue' }, // Request body (data)
+                {
+                  headers: {
+                    'signature': 'Bearer your_token',
+                    'x-api-key': 'application/json'
+                  },
+                  params: {
+                    queryParam1: 'value1',
+                    queryParam2: 'value2'
+                  }
+                }
+              );
+              
     
 
 
@@ -247,20 +265,7 @@ export const POST = async (
     
         }
     
-        const session = await stripe.checkout.sessions.create({
-            line_items,
-            mode: "payment",
-            billing_address_collection: "required",
-            shipping_address_collection : {
-                allowed_countries: ["ZW", "ZA", "ZM"]
-            },
-            phone_number_collection : {
-                enabled: true,
-            },
-            success_url : `${process.env.FRONTEND_STORE_URL}/cart?success=1`,
-            cancel_url: `${process.env.FRONTEND_STORE_URL}/cart?canceld=1`,
-        })
-    
+
     
     
     
