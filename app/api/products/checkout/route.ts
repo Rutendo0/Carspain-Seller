@@ -44,6 +44,7 @@ export const POST = async (
         baddress,
         number,
         deliveryInstructions,
+        deliveryCost,
         deliveryDate,
         total
     } = await req.json();
@@ -64,6 +65,7 @@ export const POST = async (
             let holder : Product[] = [];
             let name = '';
             let storeaddress = '';
+            let totalNew = deliveryCost;
     
             // Step 2: Iterate through each store to find the product
             for (const product of products) {
@@ -86,6 +88,7 @@ export const POST = async (
 
                     }
                     holder.push(product);
+                    totalNew += product.price
                 }
             }
             if(holder.length > 0){
@@ -104,7 +107,7 @@ export const POST = async (
                     clientEmail: clientEmail,
                     deliveryInstructions: deliveryInstructions,
                     deliveryDate: deliveryDate,
-                    sumTotal: total,
+                    sumTotal: totalNew,
                     store_id: storeId,
                     store_name: name,
                     store_address: storeaddress || '', // Fallback to empty string if undefined
