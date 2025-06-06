@@ -1,11 +1,13 @@
 "use client"
+
+import { useState, useEffect } from "react";
 import { getGraphRevenue } from "@/actions/get-graph-revenue";
 import { getInventory } from "@/actions/get-inventory";
 import { getRevenue } from "@/actions/get-revenue";
 import { getOrders } from "@/actions/get-sales";
 import { getStatusRevenue } from "@/actions/get-status-revenue";
-import { getTopProducts } from "@/actions/get-top-products"; // New action
-import { getCustomerAcquisition } from "@/actions/get-customer-acquisition"; // New action
+import { getTopProducts } from "@/actions/get-top-products";
+import { getCustomerAcquisition } from "@/actions/get-customer-acquisition";
 import { Heading } from "@/components/heading";
 import Overview from "@/components/overview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +30,8 @@ import {
 } from "recharts";
 import { getOrders2 } from "@/actions/orders";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 interface DashboardOverviewProps {
   params: {storeId: string}; 
@@ -35,11 +39,53 @@ interface DashboardOverviewProps {
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'];
 
-const DashboardOverview = async ({params}: DashboardOverviewProps) => {
-  const totalRevenue = await getRevenue(params.storeId);
-  const tsales = await getOrders(params.storeId);
+const DashboardOverview = ({params}: DashboardOverviewProps) => {
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [tsales, setTsales] = useState(0);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [tproducts, setTproducts] = useState(0);
+  const [mgr, setMgr] = useState<any[]>([]);
+  const [sgr, setSgr] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const orders = await getOrders2(params.storeId)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [
+          revenueData, 
+          salesData, 
+          ordersData, 
+          inventoryData, 
+          graphRevenueData,
+          statusRevenueData
+        ] = await Promise.all([
+          getRevenue(params.storeId),
+          getOrders(params.storeId),
+          getOrders2(params.storeId),
+          getInventory(params.storeId),
+          getGraphRevenue(params.storeId),
+          getStatusRevenue(params.storeId)
+        ]);
+
+        setTotalRevenue(revenueData);
+        setTsales(salesData);
+        setOrders(ordersData);
+        setTproducts(inventoryData);
+        setMgr(graphRevenueData);
+        setSgr(statusRevenueData);
+      } catch (err) {
+        setError("Failed to load dashboard data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.storeId]);
+
   const orderStatusData = Object.entries(
     orders.reduce((acc, order) => {
       acc[order.order_status] = (acc[order.order_status] || 0) + 1;
@@ -47,25 +93,82 @@ const DashboardOverview = async ({params}: DashboardOverviewProps) => {
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value }));
   
-  // Process order timeline data for line chart
   const orderTimelineData = Object.entries(
     orders.reduce((acc, order) => {
-      const month = format(order.createdAt.toDate(), 'MMM yyyy');
+      const month = format(new Date(order.createdAt.seconds * 1000), 'MMM yyyy');
       acc[month] = (acc[month] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, total]) => ({ name, total }));
-  const tproducts = await getInventory(params.storeId);
-  const mgr = await getGraphRevenue(params.storeId);
-  const sgr = await getStatusRevenue(params.storeId);
-//   const topProducts = await getTopProducts(params.storeId); // New data
-//   const customerData = await getCustomerAcquisition(params.storeId); // New data
+
+  if (loading) {
+    return (
+      <div className="flex-col">
+        <div className="flex-1 space-y-6 p-6 md:p-8 pt-6">
+          <Skeleton className="h-8 w-1/3 mb-6" />
+          <Separator className="bg-indigo-100" />
+          
+          {/* Summary Cards Skeleton */}
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="shadow-sm border-indigo-100">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-3/4 mt-2" />
+                  <Skeleton className="h-3 w-1/2 mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Charts Skeleton */}
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+            <Card className="lg:col-span-2 shadow-sm border-indigo-100">
+              <CardHeader>
+                <Skeleton className="h-4 w-1/3" />
+              </CardHeader>
+              <CardContent className="h-[350px]">
+                <Skeleton className="h-full w-full" />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-4">
+            {[1, 2].map((i) => (
+              <Card key={i} className="shadow-sm border-indigo-100">
+                <CardHeader>
+                  <Skeleton className="h-4 w-1/3" />
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <Skeleton className="h-full w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-col">
+        <div className="flex-1 space-y-6 p-6 md:p-8 pt-6">
+          <div className="w-full border rounded-lg bg-white shadow-sm p-6 flex flex-col items-center justify-center gap-4">
+            <p className="text-red-500 text-lg">{error}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-6 p-6 md:p-8 pt-6">
-
-        
         <Separator className="bg-indigo-100" />
         
         {/* Summary Cards */}
@@ -101,13 +204,10 @@ const DashboardOverview = async ({params}: DashboardOverviewProps) => {
               <p className="text-xs text-indigo-500 mt-1">+5 new products</p>
             </CardContent>
           </Card>
-
-        
         </div>
 
         {/* Main Charts Section */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-          {/* Revenue Trend Chart */}
           <Card className="lg:col-span-2 shadow-sm border-indigo-100">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-indigo-800">Monthly Revenue Trend</CardTitle>
@@ -150,104 +250,89 @@ const DashboardOverview = async ({params}: DashboardOverviewProps) => {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
-          {/* Payment Status Chart */}
-          {/* <Card className="col-span-1">
-                <CardHeader className="flex items-center justify-between flex-row">
-                    <CardTitle className="text-sm font-medium">
-                        Revenue by Payment Status
-                    </CardTitle>
-                    <DollarSign className="w-4h-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <Overview data={sgr}/>
-                </CardContent>
-            </Card> */}
         </div>
 
         {/* Additional Charts Section */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-4">
-  {/* Order Status Pie Chart */}
-  <Card className="shadow-sm border-indigo-100">
-    <CardHeader className="flex flex-row items-center justify-between pb-2">
-      <CardTitle className="text-sm font-medium text-indigo-800">Order Status Distribution</CardTitle>
-      <PieChart className="h-4 w-4 text-indigo-600" />
-    </CardHeader>
-    <CardContent className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsPie>
-          <Pie
-            data={orderStatusData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-          >
-            {orderStatusData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip 
-            formatter={(value) => [`${value} orders`, 'Count']}
-            contentStyle={{
-              backgroundColor: '#ffffff',
-              borderColor: '#e0e7ff',
-              borderRadius: '8px',
-            }}
-          />
-          <Legend />
-        </RechartsPie>
-      </ResponsiveContainer>
-    </CardContent>
-  </Card>
+          <Card className="shadow-sm border-indigo-100">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-indigo-800">Order Status Distribution</CardTitle>
+              <PieChart className="h-4 w-4 text-indigo-600" />
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPie>
+                  <Pie
+                    data={orderStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {orderStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value) => [`${value} orders`, 'Count']}
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      borderColor: '#e0e7ff',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Legend />
+                </RechartsPie>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-  {/* Order Timeline Line Chart */}
-  <Card className="shadow-sm border-indigo-100">
-    <CardHeader className="flex flex-row items-center justify-between pb-2">
-      <CardTitle className="text-sm font-medium text-indigo-800">Order Creation Trend</CardTitle>
-      <TrendingUp className="h-4 w-4 text-indigo-600" />
-    </CardHeader>
-    <CardContent className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={orderTimelineData}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e7ff" />
-          <XAxis 
-            dataKey="name"
-            stroke="#4f46e5"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis 
-            stroke="#4f46e5"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#ffffff',
-              borderColor: '#e0e7ff',
-              borderRadius: '8px',
-            }}
-            formatter={(value) => [`${value} orders`, 'Count']}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="total" 
-            stroke="#6366f1" 
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            activeDot={{ r: 6, strokeWidth: 0 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </CardContent>
-  </Card>
-</div>
+          <Card className="shadow-sm border-indigo-100">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-indigo-800">Order Creation Trend</CardTitle>
+              <TrendingUp className="h-4 w-4 text-indigo-600" />
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={orderTimelineData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e7ff" />
+                  <XAxis 
+                    dataKey="name"
+                    stroke="#4f46e5"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#4f46e5"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#ffffff',
+                      borderColor: '#e0e7ff',
+                      borderRadius: '8px',
+                    }}
+                    formatter={(value) => [`${value} orders`, 'Count']}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="total" 
+                    stroke="#6366f1" 
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
