@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { Billboards, Category, Model } from "@/types-db";
-import { auth } from "@clerk/nextjs/server";
+import { adminAuth } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
 import { addDoc, collection, deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { NextResponse } from "next/server";
 
@@ -8,12 +9,26 @@ export const PATCH = async (reQ: Request,
     {params} : {params: { modelId : string}}
 ) => {
     try {
-        const {userId} = auth()
-        const body = await reQ.json()
-    
+        const cookieStore = cookies()
+        const token = cookieStore.get('__session')?.value
+
+        if (!token) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
+        let userId
+        try {
+          const decodedToken = await adminAuth.verifyIdToken(token)
+          userId = decodedToken.uid
+        } catch (error) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
         if(!userId){
             return new NextResponse("Unauthorized", {status: 400})
         }
+
+        const body = await reQ.json()
     
         const {name, brandLabel, brandId} = body;
     
@@ -74,8 +89,21 @@ export const DELETE = async (reQ: Request,
     {params} : {params: { modelId : string}}
 ) => {
     try {
-        const {userId} = auth()
-    
+        const cookieStore = cookies()
+        const token = cookieStore.get('__session')?.value
+
+        if (!token) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
+        let userId
+        try {
+          const decodedToken = await adminAuth.verifyIdToken(token)
+          userId = decodedToken.uid
+        } catch (error) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
         if(!userId){
             return new NextResponse("Unauthorized", {status: 400})
         }
@@ -103,3 +131,5 @@ export const DELETE = async (reQ: Request,
     return new NextResponse("Internal Server Error", {status : 500})
 }
 };
+
+export const runtime = 'nodejs';

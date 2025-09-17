@@ -8,14 +8,16 @@ const ProductPage = async ({
   params,
   searchParams, // Access query parameters here
 }: {
-  params: { storeId: string; productId: string };
-  searchParams: { make?: string; year?: string }; // Define expected query parameters
+  params: Promise<{ storeId: string; productId: string }>;
+  searchParams: Promise<{ make?: string; year?: string }>; // Define expected query parameters
 }) => {
+  const { storeId, productId } = await params;
+  const { make, year } = await searchParams;
 
 
   // Fetch product data
   const product = (
-    await getDoc(doc(db, "stores", params.storeId, "products", params.productId))
+    await getDoc(doc(db, "stores", storeId, "products", productId))
   ).data() as Product;
 
   // Fetch reviews data
@@ -23,13 +25,13 @@ const ProductPage = async ({
     await getDocs(
       query(
         collection(doc(db, "data", "wModRJCDon6XLQYmnuPT"), "reviews"),
-        where("productID", "==", params.productId)
+        where("productID", "==", productId)
       )
     )
   ).docs.map((doc) => doc.data()) as Review[];
 
   // Access make and year from query parameters
-  const { make, year } = searchParams;
+  // Already awaited above
   console.log(make, year);
 
   // Fetch parts data based on make and year

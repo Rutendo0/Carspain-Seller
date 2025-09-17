@@ -4,10 +4,11 @@ import { Brand} from "@/types-db"
 import { BrandForm } from "./_components/brand-form";
 
 const BrandPage = async ({
-    params}: {params: { brandId: string}}) => {
+    params}: {params: Promise<{ brandId: string}>}) => {
+  const { brandId } = await params;
 
         const brand = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
-            "brands", params.brandId
+            "brands", brandId
         ))).data() as Brand;
 
 

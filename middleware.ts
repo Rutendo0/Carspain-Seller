@@ -1,20 +1,28 @@
-import { authMiddleware, clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from 'next/server'
 
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
 
-// const isProtectedRoute = createRouteMatcher([
-//     "/"
-// ]);
+  // Only lightweight checks in middleware (edge runtime)
+  // Protect pages with redirect; APIs with 401 JSON.
+  const token = request.cookies.get('__session')?.value
 
+  if (pathname.startsWith('/dashboard')) {
+    if (!token) {
+      return NextResponse.redirect(new URL('/sign-in', request.url))
+    }
+  }
 
+  if (pathname.startsWith('/api') && !pathname.startsWith('/api/auth')) {
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  }
 
-// export default clerkMiddleware((auth, req) => {
-//     if(isProtectedRoute(req)) auth().protect();
-// });
+  return NextResponse.next()
+}
 
-export default authMiddleware({ //update to be done here!!!!!!!
-  publicRoutes: ["/api/:path*"]
-});
-
+// Exclude Next.js internals, static assets, and API from middleware
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
-};
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+}

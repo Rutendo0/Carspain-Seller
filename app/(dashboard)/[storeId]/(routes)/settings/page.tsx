@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { Store } from "@/types-db";
-import { auth } from "@clerk/nextjs/server";
+import { adminAuth } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
 import { doc, getDoc } from "firebase/firestore";
 import { Settings } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -8,21 +9,35 @@ import { use } from "react";
 import { SettingsForm } from "./components/settings-form";
 
 interface SettingsPageProps{
-    params : {
+    params : Promise<{
         storeId: string
-    }
+    }>
 }
 
 
 const SettingsPage = async ({params}: SettingsPageProps) => {
+  const { storeId } = await params;
 
-    const {userId} = auth()
+    const cookieStore = await cookies()
+    const token = cookieStore.get('__session')?.value
 
-    if(!userId){
-        redirect("/sign-in")
+    if (!token) {
+      redirect("/sign-in")
     }
 
-    const store = (await getDoc(doc(db, "stores", params.storeId))
+    let userId
+    try {
+      const decodedToken = await adminAuth.verifyIdToken(token)
+      userId = decodedToken.uid
+    } catch (error) {
+      redirect("/sign-in")
+    }
+
+    if (!userId) {
+      redirect("/sign-in")
+    }
+
+    const store = (await getDoc(doc(db, "stores", storeId))
     ).data() as Store
 
     if(!store || store.userId !== userId) {

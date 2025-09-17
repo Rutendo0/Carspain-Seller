@@ -4,9 +4,10 @@ import {Billboards, Category} from "@/types-db"
 import { CategoryForm } from "./_components/category-form";
 
 const CategoryPage = async ({
-    params}: {params: { categoryId: string}}) => {
+    params}: {params: Promise<{ categoryId: string}>}) => {
+  const { categoryId } = await params;
         const category = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
-            "categories", params.categoryId
+            "categories", categoryId
         ))).data() as Category;
 
         const billboardData = (

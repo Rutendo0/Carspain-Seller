@@ -1,48 +1,32 @@
-import { db } from "@/lib/firebase";
-import {  Order } from "@/types-db";
-import { auth } from "@clerk/nextjs/server";
-import { addDoc, collection, doc, getDoc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { Order } from "@/types-db";
 import { NextResponse } from "next/server";
 
-
-export const GET = async (reQ: Request,
-    {params} : {params: {storeId: string}}
+export const GET = async (
+  _req: Request,
+  { params }: { params: { storeId: string } }
 ) => {
-    try {
+  try {
+    const { storeId } = params;
 
-        if(!params.storeId){
-            return new NextResponse("No store selected", {status: 400})
-        }
-
-        const orderData = (
-            await getDocs(
-                collection(doc(db, "stores", params.storeId), "orders")
-            )
-        ).docs.map(doc => doc.data()) as Order[];
-
-
-        const storesSnapshot = await getDocs(collection(db, "stores"));
-        const storeIds = storesSnapshot.docs.map(doc => doc.id);
-
-        // Step 2: Fetch orders for each store
-        let allOrders : Order[][] = [];
-        for (const storeId of storeIds) {
-            const ordersSnapshot = await getDocs(collection(doc(db, "stores", storeId), "orders"));
-            const orders = ordersSnapshot.docs.map(doc => doc.data() as Order[]);
-            allOrders = allOrders.concat(orders);
-        }
-
-
-        return NextResponse.json(allOrders)
-    
-    
+    if (!storeId) {
+      return new NextResponse("No store selected", { status: 400 });
     }
-   
 
- catch (error) {
+    // Use Firebase Admin SDK on the server for reliable access and proper credentials
+    const snapshot = await adminDb
+      .collection("stores")
+      .doc(storeId)
+      .collection("orders")
+      .get();
+
+    const orders = snapshot.docs.map((d) => d.data() as Order);
+
+    return NextResponse.json(orders);
+  } catch (error) {
     console.log(`ORDERS_GET:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 };
 
-
+export const runtime = "nodejs";

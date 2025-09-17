@@ -8,8 +8,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {PuffLoader} from "react-spinners"
 import { Button } from "@/components/ui/button";
-import { url } from "inspector";
-import { auth, getAuth } from "@clerk/nextjs/server";
+
 
 interface ImagesUploadProps{
     disabled?: boolean,

@@ -10,10 +10,11 @@ import { formatter } from "@/lib/utils";
 import OrdersPage from "./holder";
 
 
-const OrdersPager = async ({params} : {params : {storeId: string}}) => {
+const OrdersPager = async ({ params }: { params: Promise<{ storeId: string }> }) => {
+  const { storeId } = await params;
 
     return <>
-    <OrdersPage store_id={params.storeId}/>
+    <OrdersPage store_id={storeId}/>
     </>
 }
 

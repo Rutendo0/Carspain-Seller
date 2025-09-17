@@ -1,23 +1,24 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { Industry} from "@/types-db"
-import { IndustryForm } from "./_components/industry-form";
+import { Order } from "@/types-db"
+import { OrderForm } from "./_components/order-form";
 
-const IndustryPage = async ({
-    params}: {params: { storeId : string ,industryId: string}}) => {
+const OrderPage = async ({
+    params}: {params: Promise<{ storeId : string ,orderId: string}>}) => {
+  const { storeId, orderId } = await params;
 
-        const industry = (await getDoc(doc(db, "stores", params.storeId,
-            "industries", params.industryId
-        ))).data() as Industry;
+        const order = (await getDoc(doc(db, "stores", storeId,
+            "orders", orderId
+        ))).data() as Order;
 
 
 
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
-            <IndustryForm initialData={industry}></IndustryForm>
+            <OrderForm initialData={order}></OrderForm>
         </div>
     );
 }
 
-export default IndustryPage; 
+export default OrderPage;

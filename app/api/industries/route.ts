@@ -1,18 +1,33 @@
 import { db } from "@/lib/firebase";
 import {  Industry } from "@/types-db";
-import { auth } from "@clerk/nextjs/server";
+import { adminAuth } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
 import { addDoc, collection, doc, getDoc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";
 import { NextResponse } from "next/server";
 
 export const POST = async (reQ: Request,
 ) => {
     try {
-        const {userId} = auth()
-        const body = await reQ.json()
-    
+        const cookieStore = cookies()
+        const token = cookieStore.get('__session')?.value
+
+        if (!token) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
+        let userId
+        try {
+          const decodedToken = await adminAuth.verifyIdToken(token)
+          userId = decodedToken.uid
+        } catch (error) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
         if(!userId){
             return new NextResponse("Unauthorized", {status: 400})
         }
+
+        const body = await reQ.json()
     
         const {name, value} = body;
     
@@ -80,3 +95,5 @@ export const GET = async (reQ: Request,
 };
 
 
+
+export const runtime = 'nodejs';

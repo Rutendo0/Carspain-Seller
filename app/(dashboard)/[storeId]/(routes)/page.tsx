@@ -32,14 +32,15 @@ import { getOrders2 } from "@/actions/orders";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useParams } from "next/navigation";
 
-interface DashboardOverviewProps {
-  params: {storeId: string}; 
-}
+
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'];
 
-const DashboardOverview = ({params}: DashboardOverviewProps) => {
+const DashboardOverview = () => {
+  const params = useParams();
+  const storeId = (params?.storeId as string) || "";
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [tsales, setTsales] = useState(0);
   const [orders, setOrders] = useState<any[]>([]);
@@ -61,12 +62,12 @@ const DashboardOverview = ({params}: DashboardOverviewProps) => {
           graphRevenueData,
           statusRevenueData
         ] = await Promise.all([
-          getRevenue(params.storeId),
-          getOrders(params.storeId),
-          getOrders2(params.storeId),
-          getInventory(params.storeId),
-          getGraphRevenue(params.storeId),
-          getStatusRevenue(params.storeId)
+          getRevenue(storeId),
+          getOrders(storeId),
+          getOrders2(storeId),
+          getInventory(storeId),
+          getGraphRevenue(storeId),
+          getStatusRevenue(storeId)
         ]);
 
         setTotalRevenue(revenueData);
@@ -84,7 +85,7 @@ const DashboardOverview = ({params}: DashboardOverviewProps) => {
     };
 
     fetchData();
-  }, [params.storeId]);
+  }, [storeId]);
 
   const orderStatusData = Object.entries(
     orders.reduce((acc, order) => {

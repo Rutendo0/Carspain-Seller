@@ -4,9 +4,10 @@ import {Billboards} from "@/types-db"
 import { BillboardForm } from "./_components/billboard-form";
 
 const BillboardPage = async ({
-    params}: {params: {billboardId: string}}) => {
+    params}: {params: Promise<{billboardId: string}>}) => {
+  const { billboardId } = await params;
         const billboard = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
-            "billboards", params.billboardId
+            "billboards", billboardId
         ))).data() as Billboards;
 
         console.log(billboard)

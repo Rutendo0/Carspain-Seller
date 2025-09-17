@@ -4,10 +4,11 @@ import { Industry} from "@/types-db"
 import { IndustryForm } from "./_components/industry-form";
 
 const IndustryPage = async ({
-    params}: {params: { industryId: string}}) => {
+    params}: {params: Promise<{ industryId: string}>}) => {
+  const { industryId } = await params;
 
         const industry = (await getDoc(doc(db, "data", "wModRJCDon6XLQYmnuPT",
-            "industries", params.industryId
+            "industries", industryId
         ))).data() as Industry;
 
 

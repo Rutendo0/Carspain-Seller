@@ -1,13 +1,14 @@
 import { db } from "@/lib/firebase";
 import {  Category, Model } from "@/types-db";
-import { auth } from "@clerk/nextjs/server";
+import { adminAuth } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
 import { addDoc, collection, doc, getDoc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";
 import { NextResponse } from "next/server";
 
 export const POST = async (reQ: Request
 ) => {
     try {
-        const {userId} = auth()
+        const {userId} = await auth()
         const body = await reQ.json()
     
         if(!userId){
@@ -83,3 +84,5 @@ export const GET = async (reQ: Request,
 };
 
 
+
+export const runtime = 'nodejs';

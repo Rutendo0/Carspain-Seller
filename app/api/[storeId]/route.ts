@@ -1,19 +1,33 @@
 import { db, storage } from "@/lib/firebase";
 import { Store } from "@/types-db";
-import { auth } from "@clerk/nextjs/server";
-import { updatePassword } from "firebase/auth/cordova";
+import { adminAuth } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { NextResponse } from "next/server";
 
 export const PATCH = async(req: Request, {params}: {params: {storeId: string}}) => {
     try {
-        const {userId} = auth()
-        const body = await req.json()
+        const cookieStore = cookies()
+        const token = cookieStore.get('__session')?.value
+
+        if (!token) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
+        let userId
+        try {
+          const decodedToken = await adminAuth.verifyIdToken(token)
+          userId = decodedToken.uid
+        } catch (error) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
 
         if(!userId){
             return new NextResponse("Unauthorized", {status: 400})
         }
+
+        const body = await req.json()
 
         if(!params.storeId){
             return new NextResponse("No Store Selected", {status: 400})
@@ -42,7 +56,20 @@ export const PATCH = async(req: Request, {params}: {params: {storeId: string}}) 
 
 export const DELETE = async(req: Request, {params}: {params: {storeId: string}}) => {
     try {
-        const {userId} = auth()
+        const cookieStore = cookies()
+        const token = cookieStore.get('__session')?.value
+
+        if (!token) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
+
+        let userId
+        try {
+          const decodedToken = await adminAuth.verifyIdToken(token)
+          userId = decodedToken.uid
+        } catch (error) {
+          return new NextResponse("Unauthorized", {status: 401})
+        }
 
         if(!userId){
             return new NextResponse("Unauthorized", {status: 400})
@@ -190,3 +217,4 @@ export const DELETE = async(req: Request, {params}: {params: {storeId: string}})
         return new NextResponse("Internal Server Error", {status : 500})
     }
 }
+export const runtime = 'nodejs';
