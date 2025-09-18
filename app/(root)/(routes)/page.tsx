@@ -6,9 +6,7 @@ import dynamic from "next/dynamic"
 // Load client component only on the client to avoid server client-reference manifest
 const ClientHome = dynamic(() => import("./client-home"), { ssr: false })
 
-// This page imports a client component; ensure it’s dynamic to generate client references
-export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store'
+
 
 export default function HomePage() {
   return (
