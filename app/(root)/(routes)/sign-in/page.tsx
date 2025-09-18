@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import { Eye, EyeOff } from "lucide-react"
-import { signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "firebase/auth"
+import { signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -27,7 +27,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export default function SignInPage() {
-  const searchParams = useSearchParams()
   const router = useRouter()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -67,7 +66,10 @@ export default function SignInPage() {
 
       toast.success("Signed in successfully!")
 
-      router.replace("/")
+      // Give time for auth state to update before redirecting
+      setTimeout(() => {
+        router.replace("/")
+      }, 1000)
     } catch (error: any) {
       if (error.code === "auth/user-not-found") {
         toast.error("No user found with this email.")

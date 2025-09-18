@@ -4,13 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { addDoc, and, collection, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { NextResponse } from "next/server";
 
-export const GET = async (reQ: Request,
-) => {
+export const GET = async () => {
     try {
-
-        //get search params from the url
-        const {searchParams} = new URL(reQ.url)
- 
 
         const storesSnapshot = await getDocs(collection(db, "stores"));
         let allProducts :  Product[] = [];

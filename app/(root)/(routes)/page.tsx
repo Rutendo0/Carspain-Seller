@@ -52,7 +52,7 @@ export default function HomePage() {
     }
 
     checkStore()
-  }, [isSignedIn, loading, checkingStore, router, storeModal])
+  }, [isSignedIn, loading, checkingStore, router, storeModal, signOut])
 
   if (loading || checkingStore) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>

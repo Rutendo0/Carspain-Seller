@@ -1,5 +1,6 @@
 import { db } from "@/lib/firebase";
 import {  Category, Model } from "@/types-db";
+import { auth } from "@clerk/nextjs/server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { cookies } from "next/headers";
 import { addDoc, collection, doc, getDoc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";

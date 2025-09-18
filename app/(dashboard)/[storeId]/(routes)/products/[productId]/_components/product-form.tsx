@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { db } from "@/lib/firebase"
 import { Brand, Category, Industry, Model, Part, Product } from "@/types-db"
-import { auth } from "@clerk/nextjs/server"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import { collection, getDocs } from "firebase/firestore"

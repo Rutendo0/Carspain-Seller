@@ -139,7 +139,7 @@ export default function RegisterPage() {
                   <FormField
                     control={form.control}
                     name="firstName"
-                    render={({ field }: { field: import("react-hook-form").ControllerRenderProps<RegistrationFormValues, "password"> }) => (
+                    render={({ field }: { field: import("react-hook-form").ControllerRenderProps<RegistrationFormValues, "firstName"> }) => (
                       <FormItem>
                         <FormLabel>First name</FormLabel>
                         <FormControl>
