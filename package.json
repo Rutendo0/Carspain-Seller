@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next build",
     "start": "next start",
     "lint": "eslint ."
   },
@@ -33,7 +33,7 @@
     "firebase": "^10.12.2",
     "firebase-admin": "^13.5.0",
     "lucide-react": "^0.379.0",
-    "next": "^14.2.32",
+    "next": "14.2.32",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.62.0",
