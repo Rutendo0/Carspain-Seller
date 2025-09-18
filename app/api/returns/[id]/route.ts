@@ -9,6 +9,10 @@ export async function PATCH(
   try {
     const { status } = await req.json();
 
+    if (!adminDb) {
+      return new NextResponse("Firebase Admin not initialized", { status: 500 });
+    }
+
     await adminDb
       .collection("data").doc("wModRJCDon6XLQYmnuPT")
       .collection("returns").doc(params.id)

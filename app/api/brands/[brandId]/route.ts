@@ -18,6 +18,9 @@ export const PATCH = async (reQ: Request,
 
         let userId
         try {
+          if (!adminAuth) {
+            return new NextResponse("Firebase Admin not initialized", {status: 500})
+          }
           const decodedToken = await adminAuth.verifyIdToken(token)
           userId = decodedToken.uid
         } catch (error) {
@@ -94,6 +97,9 @@ export const DELETE = async (reQ: Request,
 
         let userId
         try {
+          if (!adminAuth) {
+            return new NextResponse("Firebase Admin not initialized", {status: 500})
+          }
           const decodedToken = await adminAuth.verifyIdToken(token)
           userId = decodedToken.uid
         } catch (error) {

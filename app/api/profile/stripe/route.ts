@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 async function getUidFromCookie() {
   const token = cookies().get('__session')?.value
   if (!token) return null
+  if (!adminAuth) return null
   try {
     const decoded = await adminAuth.verifyIdToken(token)
     return { uid: decoded.uid, email: decoded.email }
@@ -21,6 +22,10 @@ export async function POST(request: Request) {
   const auth = await getUidFromCookie()
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!adminDb) {
+    return NextResponse.json({ error: 'Firebase Admin not initialized' }, { status: 500 })
   }
 
   const { searchParams } = new URL(request.url)

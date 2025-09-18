@@ -32,12 +32,9 @@ if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   }
 }
 
-let adminDb: Firestore | null = null, adminAuth: Auth | null = null, adminStorage: Storage | null = null;
-
-if (getApps().length > 0) {
-  adminDb = getFirestore();
-  adminAuth = getAuth();
-  adminStorage = getStorage();
-}
+const isInitialized = getApps().length > 0;
+const adminDb: Firestore | null = isInitialized ? getFirestore() : null;
+const adminAuth: Auth | null = isInitialized ? getAuth() : null;
+const adminStorage: Storage | null = isInitialized ? getStorage() : null;
 
 export { adminDb, adminAuth, adminStorage };

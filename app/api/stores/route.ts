@@ -24,6 +24,9 @@ async function getUserIdFromAuth(): Promise<string | null> {
   const token = cookieStore.get("__session")?.value;
   if (token) {
     try {
+      if (!adminAuth) {
+        return null;
+      }
       const decoded = await adminAuth.verifyIdToken(token);
       return decoded.uid;
     } catch (_) {
@@ -37,6 +40,9 @@ async function getUserIdFromAuth(): Promise<string | null> {
   if (authHeader?.startsWith("Bearer ")) {
     const idToken = authHeader.substring(7);
     try {
+      if (!adminAuth) {
+        return null;
+      }
       const decoded = await adminAuth.verifyIdToken(idToken);
       return decoded.uid;
     } catch (_) {
@@ -52,6 +58,10 @@ export const POST = async (req: Request) => {
     const userId = await getUserIdFromAuth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!adminDb) {
+      return NextResponse.json({ error: "Firebase Admin not initialized" }, { status: 500 });
     }
 
     const body = await req.json();
@@ -91,6 +101,10 @@ export const POST = async (req: Request) => {
       ...(body.place_name && { place_name: body.place_name }),
     };
 
+    if (!adminDb) {
+      return NextResponse.json({ error: "Firebase Admin not initialized" }, { status: 500 });
+    }
+
     const docRef = await adminDb.collection('stores').add(storeData);
     const id = docRef.id;
     await docRef.update({ id }); // Add ID back to doc
@@ -118,6 +132,14 @@ export const GET = async () => {
     const userId = await getUserIdFromAuth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!adminDb) {
+      return NextResponse.json({ error: "Firebase Admin not initialized" }, { status: 500 });
+    }
+
+    if (!adminDb) {
+      return NextResponse.json({ error: "Firebase Admin not initialized" }, { status: 500 });
     }
 
     const snapshot = await adminDb.collection('stores').where('userId', '==', userId).limit(1).get();

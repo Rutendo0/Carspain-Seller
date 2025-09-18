@@ -11,6 +11,10 @@ export const GET = async (
     const { orderId } = params;
     if (!orderId) return new NextResponse("Order ID required", { status: 400 });
 
+    if (!adminDb) {
+      return new NextResponse("Firebase Admin not initialized", { status: 500 });
+    }
+
     // Search across all stores with Admin SDK
     const storesSnap = await adminDb.collection("stores").get();
     let found: Order | null = null;
@@ -39,10 +43,18 @@ export const PATCH = async (
     const token = cookieStore.get("__session")?.value;
     if (!token) return new NextResponse("Unauthorized", { status: 401 });
 
+    if (!adminAuth) {
+      return new NextResponse("Firebase Admin not initialized", { status: 500 });
+    }
+
     try { await adminAuth.verifyIdToken(token); } catch { return new NextResponse("Unauthorized", { status: 401 }); }
 
     const { order_status, store_id } = await req.json();
     if (!order_status || !store_id) return new NextResponse("Invalid body", { status: 400 });
+
+    if (!adminDb) {
+      return new NextResponse("Firebase Admin not initialized", { status: 500 });
+    }
 
     const orderDoc = await adminDb
       .collection("stores").doc(store_id)
@@ -74,7 +86,15 @@ export const DELETE = async (
     const cookieStore = await cookies();
     const token = cookieStore.get("__session")?.value;
     if (!token) return new NextResponse("Unauthorized", { status: 401 });
+
+    if (!adminAuth) {
+      return new NextResponse("Firebase Admin not initialized", { status: 500 });
+    }
     try { await adminAuth.verifyIdToken(token); } catch { return new NextResponse("Unauthorized", { status: 401 }); }
+
+    if (!adminDb) {
+      return new NextResponse("Firebase Admin not initialized", { status: 500 });
+    }
 
     const storesSnap = await adminDb.collection("stores").get();
     for (const storeDoc of storesSnap.docs) {
