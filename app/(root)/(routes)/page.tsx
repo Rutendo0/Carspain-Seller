@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ClientHome from "./client-home"
 
-// Force dynamic rendering to ensure proper client manifest generation during build
+// This page imports a client component; ensure it’s dynamic to generate client references
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 
 export default function HomePage() {
   return (
