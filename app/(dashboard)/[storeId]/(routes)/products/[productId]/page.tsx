@@ -1,8 +1,8 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, getDoc, getDocs, query, Timestamp, where } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { Timestamp } from "firebase/firestore";
 import { Brand, Category, Industry, Model, Part, Product, Review } from "@/types-db";
 import { ProductForm } from "./_components/product-form";
-import { useState } from "react";
 
 const ProductPage = async ({
   params,
@@ -16,19 +16,17 @@ const ProductPage = async ({
 
 
   // Fetch product data
-  const product = (
-    await getDoc(doc(db, "stores", storeId, "products", productId))
-  ).data() as Product;
+  let product: Product | null = null;
+  if (productId !== "new") {
+    const productSnap = await adminDb.collection("stores").doc(storeId).collection("products").doc(productId).get();
+    if (productSnap.exists) {
+      product = { id: productId, ...productSnap.data() } as Product;
+    }
+  }
 
   // Fetch reviews data
-  const categoryData = (
-    await getDocs(
-      query(
-        collection(doc(db, "data", "wModRJCDon6XLQYmnuPT"), "reviews"),
-        where("productID", "==", productId)
-      )
-    )
-  ).docs.map((doc) => doc.data()) as Review[];
+  const reviewsSnap = await adminDb.collection("data").doc("wModRJCDon6XLQYmnuPT").collection("reviews").where("productID", "==", productId).get();
+  const categoryData = reviewsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Review[];
 
   // Access make and year from query parameters
   // Already awaited above
@@ -36,22 +34,14 @@ const ProductPage = async ({
 
   // Fetch parts data based on make and year
   const startTime = performance.now(); // Start timing the request
-  const partsData = (
-    await getDocs(
-      query(
-        collection(doc(db, "data", "wModRJCDon6XLQYmnuPT"), "parts2"),
-        where("Make", "==", make || ""), // Use make from query params
-        where("Year", "==", year || "") // Use year from query params
-      )
-    )
-  ).docs.map((doc) => doc.data()) as Part[];
+  const partsSnap = await adminDb.collection("data").doc("wModRJCDon6XLQYmnuPT").collection("parts2").where("Make", "==", make || "").where("Year", "==", year || "").get();
+  const partsData = partsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Part[];
   const endTime = performance.now(); // End timing the request
   console.log(`Query took ${endTime - startTime} milliseconds.`);
 
   // Fetch industries data
-  const industriesData = (
-    await getDocs(collection(doc(db, "data", "wModRJCDon6XLQYmnuPT"), "industries"))
-  ).docs.map((doc) => doc.data()) as Industry[];
+  const industriesSnap = await adminDb.collection("data").doc("wModRJCDon6XLQYmnuPT").collection("industries").get();
+  const industriesData = industriesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Industry[];
 
   // Function to calculate time elapsed
   const timeElapsed = (createdAt: Timestamp) => {

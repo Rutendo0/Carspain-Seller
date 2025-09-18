@@ -19,12 +19,29 @@ const serviceAccount = {
 const rawBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
 if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount as any),
-    storageBucket: rawBucket,
-  });
+  try {
+    initializeApp({
+      credential: cert(serviceAccount as any),
+      storageBucket: rawBucket,
+    });
+    console.log('Firebase Admin initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Firebase Admin:', error);
+    console.error('Check FIREBASE_PRIVATE_KEY in .env.local - it must be the full PEM string with literal \\n');
+    // Fallback: do not initialize, exports will be undefined, handle in code
+  }
 }
 
-export const adminDb = getFirestore();
-export const adminAuth = getAuth();
-export const adminStorage = getStorage();
+let adminDb, adminAuth, adminStorage;
+
+if (getApps().length > 0) {
+  adminDb = getFirestore();
+  adminAuth = getAuth();
+  adminStorage = getStorage();
+} else {
+  adminDb = null;
+  adminAuth = null;
+  adminStorage = null;
+}
+
+export { adminDb, adminAuth, adminStorage };

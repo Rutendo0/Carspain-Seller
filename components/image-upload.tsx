@@ -40,6 +40,7 @@ const ImageUpload = ({disabled, onChange, onRemove, value}: ImageUploadProps) =>
       const res = await fetch('/api/upload-avatar', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       if (!res.ok) {

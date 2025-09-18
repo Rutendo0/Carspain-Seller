@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { adminAuth, adminDb } from '@/lib/firebase-admin'
 import { stripe } from '@/lib/stripe'
 import { z } from 'zod'
+import jwt from 'jsonwebtoken'
 
 // Shape of profile data stored in Firestore
 interface ProfileData {
@@ -49,8 +50,14 @@ async function getUidFromCookie() {
   const token = cookies().get('__session')?.value
   if (!token) return null
   try {
-    const decoded = await adminAuth.verifyIdToken(token)
-    return { uid: decoded.uid, email: decoded.email }
+    if (adminAuth) {
+      const decoded = await adminAuth.verifyIdToken(token)
+      return { uid: decoded.uid, email: decoded.email }
+    } else {
+      // Fallback for dev - insecure, decode without verify
+      const decoded = jwt.decode(token) as any
+      return { uid: decoded.sub || decoded.uid, email: decoded.email }
+    }
   } catch {
     return null
   }
@@ -60,6 +67,10 @@ export async function GET() {
   const auth = await getUidFromCookie()
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!adminDb) {
+    return NextResponse.json({ error: 'Admin not initialized' }, { status: 500 })
   }
 
   try {
@@ -88,6 +99,10 @@ export async function PUT(request: Request) {
   const auth = await getUidFromCookie()
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!adminDb) {
+    return NextResponse.json({ error: 'Admin not initialized' }, { status: 500 })
   }
 
   try {

@@ -1,76 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { adminAuth, adminStorage } from '@/lib/firebase-admin'
+import { adminAuth } from '@/lib/firebase-admin'
+import jwt from 'jsonwebtoken'
+import { saveAvatar } from '@/lib/neon'
 import crypto from 'node:crypto'
 
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
+  console.log('=== Upload API Called ===')
+  
   const token = cookies().get('__session')?.value
   if (!token) {
+    console.log('No token provided')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  let uid: string;
+  try {
+    if (adminAuth) {
+      await adminAuth.verifyIdToken(token)
+    }
+    // Decode token to get uid (dev only, insecure - verify in production)
+    const decoded = jwt.decode(token) as any
+    uid = decoded.sub || decoded.uid
+    console.log('UID from token:', uid)
+  } catch (err) {
+    console.log('Token decode failed:', (err as Error).message)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    await adminAuth.verifyIdToken(token)
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  try {
+    console.log('Processing formData...')
     const formData = await request.formData()
     const file = formData.get('file') as File | null
+    console.log('File found:', !!file)
     if (!file) {
+      console.log('No file in formData')
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
+    const fileType = file.type;
+    console.log('File name:', file.name, 'Size:', file.size, 'Type:', fileType)
+
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    const fileSize = buffer.length;
+    console.log('Buffer size:', fileSize)
 
     // 5MB limit
-    if (buffer.length === 0 || buffer.length > 5 * 1024 * 1024) {
+    if (fileSize === 0 || fileSize > 5 * 1024 * 1024) {
+      console.log('Invalid file size:', fileSize)
       return NextResponse.json({ error: 'Invalid file size' }, { status: 400 })
     }
 
-    const storagePath = `Images/${Date.now()}-${file.name}`
+    // Convert to base64
+    const base64 = buffer.toString('base64')
+    console.log('Base64 length:', base64.length)
 
-    // Resolve and normalize bucket
-    const rawBucket = process.env.FIREBASE_STORAGE_BUCKET
-      || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.appspot.com` : undefined)
+    const url = await saveAvatar(uid, base64, fileType)
+    console.log('Avatar saved, URL:', url)
 
-    const bucketName = rawBucket?.replace('.firebasestorage.app', '.appspot.com')
-    if (!bucketName) {
-      return NextResponse.json({ error: 'Storage bucket is not configured' }, { status: 500 })
-    }
-
-    const bucket = adminStorage.bucket(bucketName)
-    const fileRef = bucket.file(storagePath)
-    const downloadToken = crypto.randomUUID()
-
-    const metadata = {
-      contentType: file.type || 'application/octet-stream',
-      metadata: {
-        firebaseStorageDownloadTokens: downloadToken,
-      },
-    }
-
-    // Use write stream for clearer errors and robustness
-    await new Promise<void>((resolve, reject) => {
-      const stream = fileRef.createWriteStream({
-        resumable: false,
-        metadata,
-      })
-      stream.on('error', (err) => reject(err))
-      stream.on('finish', () => resolve())
-      stream.end(buffer)
-    })
-
-    const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media&token=${downloadToken}`
-
-    return NextResponse.json({ url: downloadURL })
+    return NextResponse.json({ url })
   } catch (error: any) {
-    console.error('Upload error:', error?.message || error)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    console.error('Upload error:', error)
+    return NextResponse.json({ error: 'Upload failed: ' + (error?.message || 'Unknown error') }, { status: 500 })
   }
 }

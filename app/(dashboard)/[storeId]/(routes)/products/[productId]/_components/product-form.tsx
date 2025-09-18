@@ -24,7 +24,7 @@ import toast from "react-hot-toast"
 import { z } from "zod"
 
 interface ProductFormProps {
-    initialData: Product;
+    initialData: Product | null;
     parts: Part[];
     industries: Industry[];
 }
@@ -46,7 +46,7 @@ const formSchema = z.object({
 export const ProductForm = ({initialData, industries, parts}: ProductFormProps) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData || {
+        defaultValues: initialData ?? {
             name: "",
             price: 0,
             Code: "",
