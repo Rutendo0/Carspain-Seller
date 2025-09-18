@@ -1,10 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import dynamic from "next/dynamic"
-
-// Load client component only on the client to avoid server client-reference manifest
-const ClientHome = dynamic(() => import("./client-home"), { ssr: false })
+import ClientHome from "./client-home"
 
 
 
