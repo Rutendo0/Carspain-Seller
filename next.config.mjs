@@ -16,15 +16,6 @@ const nextConfig = {
             },
         ],
     },
-    webpack: (config, { isServer }) => {
-        if (!isServer) {
-            config.resolve.alias = {
-                ...config.resolve.alias,
-                'node:process': 'process',
-            };
-        }
-        return config;
-    },
 };
 
 export default nextConfig;
