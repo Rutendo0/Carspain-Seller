@@ -10,6 +10,10 @@ export const PATCH = async (reQ: Request,
     {params} : {params: {storeId: string, productId : string}}
 ) => {
     try {
+        if (!adminAuth) {
+          return new NextResponse("Firebase admin not initialized", {status: 500});
+        }
+
         const cookieStore = cookies()
         const token = cookieStore.get('__session')?.value
 
@@ -125,6 +129,10 @@ export const DELETE = async (reQ: Request,
     {params} : {params: {storeId: string, productId : string}}
 ) => {
     try {
+        if (!adminAuth) {
+          return new NextResponse("Firebase admin not initialized", {status: 500});
+        }
+
         const cookieStore = cookies()
         const token = cookieStore.get('__session')?.value
 

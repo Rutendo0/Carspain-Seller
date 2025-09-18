@@ -9,6 +9,10 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
+  if (!adminAuth || !adminDb) {
+    throw new Error("Firebase admin not initialized");
+  }
+
   const { storeId } = params;
   const cookieStore = await cookies();
   const token = cookieStore.get("__session")?.value;

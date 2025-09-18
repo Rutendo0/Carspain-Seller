@@ -16,6 +16,10 @@ interface SettingsPageProps{
 
 
 const SettingsPage = async ({params}: SettingsPageProps) => {
+  if (!adminAuth) {
+    throw new Error("Firebase admin auth not initialized");
+  }
+
   const { storeId } = await params;
 
     const cookieStore = await cookies()

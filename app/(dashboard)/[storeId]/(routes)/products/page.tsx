@@ -12,6 +12,10 @@ import { cookies, headers } from "next/headers";
 import toast from "react-hot-toast";
 
 const ProductsPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
+  if (!adminAuth) {
+    throw new Error("Firebase admin auth not initialized");
+  }
+
   const { storeId } = await params;
 
     const h = headers();

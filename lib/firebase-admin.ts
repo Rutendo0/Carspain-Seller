@@ -1,7 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
+import { getAuth, Auth } from 'firebase-admin/auth';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getStorage, Storage } from 'firebase-admin/storage';
 
 const serviceAccount = {
   type: "service_account",
@@ -18,7 +18,7 @@ const serviceAccount = {
 
 const rawBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
-if (!getApps().length) {
+if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   try {
     initializeApp({
       credential: cert(serviceAccount as any),
@@ -32,16 +32,12 @@ if (!getApps().length) {
   }
 }
 
-let adminDb, adminAuth, adminStorage;
+let adminDb: Firestore | null = null, adminAuth: Auth | null = null, adminStorage: Storage | null = null;
 
 if (getApps().length > 0) {
   adminDb = getFirestore();
   adminAuth = getAuth();
   adminStorage = getStorage();
-} else {
-  adminDb = null;
-  adminAuth = null;
-  adminStorage = null;
 }
 
 export { adminDb, adminAuth, adminStorage };

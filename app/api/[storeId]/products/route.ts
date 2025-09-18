@@ -9,6 +9,10 @@ export const POST = async (
   { params }: { params: { storeId: string } }
 ) => {
   try {
+    if (!adminAuth || !adminDb) {
+      return new NextResponse("Firebase admin not initialized", { status: 500 });
+    }
+
     const cookieStore = cookies();
     const token = (await cookieStore).get("__session")?.value;
 
@@ -94,6 +98,10 @@ export const GET = async (
   { params }: { params: { storeId: string } }
 ) => {
   try {
+    if (!adminDb) {
+      return new NextResponse("Firebase admin not initialized", { status: 500 });
+    }
+
     const { storeId } = params;
     if (!storeId) return new NextResponse("No store selected", { status: 400 });
 

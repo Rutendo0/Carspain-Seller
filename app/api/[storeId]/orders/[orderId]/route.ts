@@ -8,6 +8,10 @@ import { NextResponse } from "next/server";
 export const PATCH = async (reQ: Request,
     {params} : {params: Promise<{storeId: string, orderId : string}>}
 ) => {
+  if (!adminAuth) {
+    return new NextResponse("Firebase admin not initialized", {status: 500});
+  }
+
   const { storeId, orderId } = await params;
     try {
         const cookieStore = await cookies()
@@ -97,6 +101,10 @@ export const PATCH = async (reQ: Request,
 export const DELETE = async (reQ: Request,
     {params} : {params: Promise<{storeId: string, orderId : string}>}
 ) => {
+  if (!adminAuth) {
+    return new NextResponse("Firebase admin not initialized", {status: 500});
+  }
+
   const { storeId, orderId } = await params;
     try {
         const cookieStore = await cookies()

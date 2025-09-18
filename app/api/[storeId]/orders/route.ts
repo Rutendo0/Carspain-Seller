@@ -7,6 +7,10 @@ export const GET = async (
   { params }: { params: { storeId: string } }
 ) => {
   try {
+    if (!adminDb) {
+      return new NextResponse("Firebase admin not initialized", { status: 500 });
+    }
+
     const { storeId } = params;
 
     if (!storeId) {

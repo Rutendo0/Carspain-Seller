@@ -11,6 +11,10 @@ const ProductPage = async ({
   params: Promise<{ storeId: string; productId: string }>;
   searchParams: Promise<{ make?: string; year?: string }>; // Define expected query parameters
 }) => {
+  if (!adminDb) {
+    throw new Error("Firebase admin not initialized");
+  }
+
   const { storeId, productId } = await params;
   const { make, year } = await searchParams;
 
