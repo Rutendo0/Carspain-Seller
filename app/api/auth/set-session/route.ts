@@ -9,12 +9,13 @@ export async function POST(request: NextRequest) {
     }
 
     const idToken = authHeader.substring(7)
-    const decodedToken = await adminAuth.verifyIdToken(idToken)
+    await adminAuth.verifyIdToken(idToken)
 
     const response = NextResponse.json({ success: true })
+    const isHttps = request.nextUrl.protocol === 'https:'
     response.cookies.set('__session', idToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps, // only secure on HTTPS
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 5 // 5 days

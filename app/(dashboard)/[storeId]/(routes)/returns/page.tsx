@@ -1,24 +1,17 @@
 "use server"
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { headers } from "next/headers";
 import ReturnsPage from "./returns";
 import { ReturnData } from "@/types-db"; // Import the ReturnData type
 
 const Home = async ({ params }: { params: Promise<{ storeId: string }> }) => {
   const { storeId } = await params;
-  // Fetch returns data for the specific store
-  const returnsQuery = query(
-    collection(db, "data", "wModRJCDon6XLQYmnuPT", "returns"),
-    where("originalOrder", "==", storeId)
-  );
-
-  const returnsSnapshot = await getDocs(returnsQuery);
-  const returnsData = returnsSnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as ReturnData[]; // Explicit type casting here
-
-  console.log(returnsData[0])
+  // Fetch returns data via server API (Admin SDK)
+  const h = headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  const proto = h.get('x-forwarded-proto') ?? 'http';
+  const base = process.env.NEXT_PUBLIC_BASE_URL || (host ? `${proto}://${host}` : '');
+  const res = await fetch(`${base}/api/returns?storeId=${storeId}`, { cache: 'no-store' });
+  const returnsData = (await res.json()) as ReturnData[];
 
   return (
     <div className="flex-col">

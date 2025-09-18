@@ -7,12 +7,11 @@ import { getRevenue } from "@/actions/get-revenue";
 import { getOrders } from "@/actions/get-sales";
 import { getStatusRevenue } from "@/actions/get-status-revenue";
 import { getTopProducts } from "@/actions/get-top-products";
-import { getCustomerAcquisition } from "@/actions/get-customer-acquisition";
 import { Heading } from "@/components/heading";
 import Overview from "@/components/overview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DollarSign, Package, ShoppingCart, Users, TrendingUp, PieChart } from "lucide-react";
+import { DollarSign, Package, ShoppingCart, TrendingUp, PieChart } from "lucide-react";
 import { 
   BarChart, 
   Bar, 
@@ -34,9 +33,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 
-
-
-const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'];
+// Dark-to-light green palette for pie slices
+const COLORS = ["#064e3b", "#065f46", "#047857", "#059669", "#10b981"]; 
 
 const DashboardOverview = () => {
   const params = useParams();
@@ -54,28 +52,15 @@ const DashboardOverview = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [
-          revenueData, 
-          salesData, 
-          ordersData, 
-          inventoryData, 
-          graphRevenueData,
-          statusRevenueData
-        ] = await Promise.all([
-          getRevenue(storeId),
-          getOrders(storeId),
-          getOrders2(storeId),
-          getInventory(storeId),
-          getGraphRevenue(storeId),
-          getStatusRevenue(storeId)
-        ]);
-
-        setTotalRevenue(revenueData);
-        setTsales(salesData);
-        setOrders(ordersData);
-        setTproducts(inventoryData);
-        setMgr(graphRevenueData);
-        setSgr(statusRevenueData);
+        const res = await fetch(`/api/${storeId}/dashboard`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch dashboard');
+        const data = await res.json();
+        setTotalRevenue(data.totalRevenue || 0);
+        setTsales(data.totalSales || 0);
+        setOrders(data.orders || []);
+        setTproducts(data.totalProducts || 0);
+        setMgr(data.graphRevenue || []);
+        setSgr(data.statusRevenue || []);
       } catch (err) {
         setError("Failed to load dashboard data");
         console.error(err);
@@ -84,7 +69,7 @@ const DashboardOverview = () => {
       }
     };
 
-    fetchData();
+    if (storeId) fetchData();
   }, [storeId]);
 
   const orderStatusData = Object.entries(
@@ -107,12 +92,12 @@ const DashboardOverview = () => {
       <div className="flex-col">
         <div className="flex-1 space-y-6 p-6 md:p-8 pt-6">
           <Skeleton className="h-8 w-1/3 mb-6" />
-          <Separator className="bg-indigo-100" />
+          <Separator className="bg-[hsl(var(--border))]" />
           
           {/* Summary Cards Skeleton */}
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="shadow-sm border-indigo-100">
+              <Card key={i} className="shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-4 w-4 rounded-full" />
@@ -127,7 +112,7 @@ const DashboardOverview = () => {
 
           {/* Charts Skeleton */}
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            <Card className="lg:col-span-2 shadow-sm border-indigo-100">
+            <Card className="lg:col-span-2 shadow-sm">
               <CardHeader>
                 <Skeleton className="h-4 w-1/3" />
               </CardHeader>
@@ -139,7 +124,7 @@ const DashboardOverview = () => {
 
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-4">
             {[1, 2].map((i) => (
-              <Card key={i} className="shadow-sm border-indigo-100">
+              <Card key={i} className="shadow-sm">
                 <CardHeader>
                   <Skeleton className="h-4 w-1/3" />
                 </CardHeader>
@@ -170,64 +155,64 @@ const DashboardOverview = () => {
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-6 p-6 md:p-8 pt-6">
-        <Separator className="bg-indigo-100" />
+        <Separator className="bg-[hsl(var(--border))]" />
         
         {/* Summary Cards */}
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="shadow-sm border-indigo-100 hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-800">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-medium text-foreground">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-[hsl(var(--primary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-indigo-900">${totalRevenue.toLocaleString()}</div>
+              <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-indigo-100 hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-800">Total Sales</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-medium text-foreground">Total Sales</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-[hsl(var(--primary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-indigo-900">{tsales.toLocaleString()}</div>
-              <p className="text-xs text-indigo-500 mt-1">+8% from last month</p>
+              <div className="text-2xl font-bold">{tsales.toLocaleString()}</div>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">+8% from last month</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-indigo-100 hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-800">Products in Stock</CardTitle>
-              <Package className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-medium text-foreground">Products in Stock</CardTitle>
+              <Package className="h-4 w-4 text-[hsl(var(--primary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-indigo-900">{tproducts.toLocaleString()}</div>
-              <p className="text-xs text-indigo-500 mt-1">+5 new products</p>
+              <div className="text-2xl font-bold">{tproducts.toLocaleString()}</div>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">+5 new products</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Charts Section */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-          <Card className="lg:col-span-2 shadow-sm border-indigo-100">
+          <Card className="lg:col-span-2 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-800">Monthly Revenue Trend</CardTitle>
-              <DollarSign className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-medium text-foreground">Monthly Revenue Trend</CardTitle>
+              <DollarSign className="h-4 w-4 text-[hsl(var(--primary))]" />
             </CardHeader>
             <CardContent className="pl-0 h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={mgr}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e7ff" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis 
                     dataKey="name"
-                    stroke="#4f46e5"
+                    stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis 
                     tickFormatter={(v) => `$${v.toLocaleString()}`}
-                    stroke="#4f46e5"
+                    stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
@@ -235,15 +220,15 @@ const DashboardOverview = () => {
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: '#ffffff',
-                      borderColor: '#e0e7ff',
+                      borderColor: 'hsl(var(--border))',
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
-                    formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']}
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
                   />
                   <Bar 
                     dataKey="total" 
-                    fill="#6366f1" 
+                    fill="hsl(var(--primary))" 
                     radius={[4, 4, 0, 0]} 
                     barSize={24}
                   />
@@ -255,10 +240,10 @@ const DashboardOverview = () => {
 
         {/* Additional Charts Section */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-4">
-          <Card className="shadow-sm border-indigo-100">
+          <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-800">Order Status Distribution</CardTitle>
-              <PieChart className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-medium text-foreground">Order Status Distribution</CardTitle>
+              <PieChart className="h-4 w-4 text-[hsl(var(--primary))]" />
             </CardHeader>
             <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -269,7 +254,7 @@ const DashboardOverview = () => {
                     cy="50%"
                     labelLine={false}
                     outerRadius={80}
-                    fill="#8884d8"
+                    fill="hsl(var(--primary))"
                     dataKey="value"
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
@@ -278,10 +263,10 @@ const DashboardOverview = () => {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value) => [`${value} orders`, 'Count']}
+                    formatter={(value: number) => [`${value} orders`, 'Count']}
                     contentStyle={{
                       backgroundColor: '#ffffff',
-                      borderColor: '#e0e7ff',
+                      borderColor: 'hsl(var(--border))',
                       borderRadius: '8px',
                     }}
                   />
@@ -291,24 +276,24 @@ const DashboardOverview = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-indigo-100">
+          <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-800">Order Creation Trend</CardTitle>
-              <TrendingUp className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-medium text-foreground">Order Creation Trend</CardTitle>
+              <TrendingUp className="h-4 w-4 text-[hsl(var(--primary))]" />
             </CardHeader>
             <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={orderTimelineData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e7ff" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis 
                     dataKey="name"
-                    stroke="#4f46e5"
+                    stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis 
-                    stroke="#4f46e5"
+                    stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
@@ -316,15 +301,15 @@ const DashboardOverview = () => {
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: '#ffffff',
-                      borderColor: '#e0e7ff',
+                      borderColor: 'hsl(var(--border))',
                       borderRadius: '8px',
                     }}
-                    formatter={(value) => [`${value} orders`, 'Count']}
+                    formatter={(value: number) => [`${value} orders`, 'Count']}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="total" 
-                    stroke="#6366f1" 
+                    stroke="hsl(var(--primary))" 
                     strokeWidth={2}
                     dot={{ r: 4 }}
                     activeDot={{ r: 6, strokeWidth: 0 }}

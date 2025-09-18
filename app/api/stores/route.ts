@@ -1,8 +1,7 @@
-import { adminAuth } from "@/lib/firebase-admin";
-// adminDb not used - Firestore bypassed for mock development
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
 
 interface StoreData {
   name: string;
@@ -77,10 +76,7 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: "Validation failed", details: errors }, { status: 400 });
     }
 
-    // Mock store creation without Firestore
-    const id = `store_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; // Simple unique ID
     const storeData: StoreData = {
-      id,
       name: body.name,
       address: body.address,
       store_owner: body.store_owner,
@@ -88,20 +84,29 @@ export const POST = async (req: Request) => {
       tax_clearance: body.tax_clearance,
       number: body.number,
       userId,
-      createdAt: new Date().toISOString(),
+      createdAt: FieldValue.serverTimestamp(),
       ...(latitude !== undefined && { latitude }),
       ...(longitude !== undefined && { longitude }),
       ...(body.formatted_address && { formatted_address: body.formatted_address }),
       ...(body.place_name && { place_name: body.place_name }),
     };
 
-    // Store full store data in cookie as JSON for persistence
-    const cookieStore = await cookies();
-    cookieStore.set('storeData', JSON.stringify(storeData), { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    const docRef = await adminDb.collection('stores').add(storeData);
+    const id = docRef.id;
+    await docRef.update({ id }); // Add ID back to doc
 
-    console.log(`Mock store created: ${id}`, storeData);
+    console.log(`Store created: ${id}`, storeData);
 
-    return NextResponse.json(storeData);
+    const isHttps = new URL(req.url).protocol === 'https:'
+    const response = NextResponse.json({ id, ...storeData });
+    response.cookies.set('storeData', JSON.stringify({ id, userId }), {
+      httpOnly: true,
+      secure: isHttps,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 5, // 5 days
+    });
+    return response;
   } catch (error: any) {
     console.error(`STORES_POST:`, error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -115,16 +120,15 @@ export const GET = async () => {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const cookieStore = await cookies();
-    const storeDataJson = cookieStore.get('storeData')?.value;
-
-    if (storeDataJson) {
-      const storeData = JSON.parse(storeDataJson);
-      return NextResponse.json({ store: storeData });
+    const snapshot = await adminDb.collection('stores').where('userId', '==', userId).limit(1).get();
+    if (snapshot.empty) {
+      return NextResponse.json({ store: null });
     }
 
-    // No store yet
-    return NextResponse.json({ store: null });
+    const storeDoc = snapshot.docs[0];
+    const storeData = { id: storeDoc.id, ...storeDoc.data() };
+
+    return NextResponse.json({ store: storeData });
   } catch (error: any) {
     console.error(`STORES_GET:`, error);
     // Provide more detail in development to diagnose issues

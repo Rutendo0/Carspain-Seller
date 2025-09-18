@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 
 export const GET = async (req: Request) => {
   try {
@@ -11,16 +10,13 @@ export const GET = async (req: Request) => {
       return new NextResponse("Store ID is required", { status: 400 });
     }
 
-    const returnsQuery = query(
-      collection(db, "data", "wModRJCDon6XLQYmnuPT", "returns"),
-      where("originalOrder.storeId", "==", storeId)
-    );
+    const snap = await adminDb
+      .collection("data").doc("wModRJCDon6XLQYmnuPT")
+      .collection("returns")
+      .where("originalOrder.store_id", "==", storeId)
+      .get();
 
-    const returnsSnapshot = await getDocs(returnsQuery);
-    const returnsData = returnsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const returnsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json(returnsData);
     

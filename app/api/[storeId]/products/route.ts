@@ -1,194 +1,126 @@
-import { db } from "@/lib/firebase";
-import {  Industry, Product } from "@/types-db";
-import { adminAuth } from "@/lib/firebase-admin";
-import { cookies } from "next/headers";
-import { addDoc, and, collection, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { NextResponse } from "next/server";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
+import { FieldValue } from "firebase-admin/firestore";
+import { Product } from "@/types-db";
 
-export const POST = async (reQ: Request,
-    {params} : {params: {storeId: string}}
+export const POST = async (
+  req: Request,
+  { params }: { params: { storeId: string } }
 ) => {
+  try {
+    const cookieStore = cookies();
+    const token = (await cookieStore).get("__session")?.value;
+
+    if (!token) return new NextResponse("Unauthorized", { status: 401 });
+
+    let userId: string | undefined;
     try {
-        const cookieStore = cookies()
-        const token = cookieStore.get('__session')?.value
-
-        if (!token) {
-          return new NextResponse("Unauthorized", {status: 401})
-        }
-
-        let userId
-        try {
-          const decodedToken = await adminAuth.verifyIdToken(token)
-          userId = decodedToken.uid
-        } catch (error) {
-          return new NextResponse("Unauthorized", {status: 401})
-        }
-
-        if(!userId){
-            return new NextResponse("Unauthorized", {status: 400})
-        }
-
-        const body = await reQ.json()
-    
-        const {name,
-            price,
-            Code,
-            images,
-            isFeatured,
-            isArchived,
-            category,
-            brand,
-            model,
-            stock,
-            year
-        } = body;
-    
-    
-        if(!name){
-            return new NextResponse("Category Name Missing", {status: 400})
-        }
-        if(!images || !images.length){
-            return new NextResponse("Images missing Missing", {status: 400})
-        }
-
-        if(!price){
-            return new NextResponse("No price specified", {status: 400})
-        }
-        if(!category){
-            return new NextResponse("No category selected", {status: 400})
-        }
-
-        if(!Code){
-            return new NextResponse("No OEM specified", {status: 400})
-        }
-
-        if(!year){
-            return new NextResponse("No year specified", {status: 400})
-        }
-
-
-        if(!params.storeId){
-            return new NextResponse("No store selected", {status: 400})
-        }
-
-
-        const store = await getDoc(doc(db, "stores", params.storeId))
-
-        if(store.exists()){
-            let storeData = store.data()
-            if(storeData?.userId !== userId){
-                return new NextResponse("Unauthorized Access", {status: 500})
-            }
-        }
-
-
-
-        const ProductsData = {
-            name,
-            price,
-            Code,
-            images,
-            isFeatured,
-            isArchived,
-            category,
-            brand,
-            model,
-            stock,
-            year,
-            createdAt: serverTimestamp()
-        }
-
-        console.log(ProductsData);
-
-        const ProductsRef = await addDoc(
-            collection(db,"stores", params.storeId, "products"),
-            ProductsData
-        );
-
-        const id = ProductsRef.id;
-        await updateDoc(doc(db, "stores", params.storeId, "products", id), 
-        {...ProductsData,
-            id,
-            updatedAt: serverTimestamp()
-        }
-    );
-
-    return NextResponse.json({id, ...ProductsData})
-    
-    
+      const decoded = await adminAuth.verifyIdToken(token);
+      userId = decoded.uid;
+    } catch {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
-   
 
- catch (error) {
-    console.log(`PRODUCTS_POST:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
+    const { storeId } = params;
+    if (!storeId) return new NextResponse("No store selected", { status: 400 });
+
+    const body = await req.json();
+    const {
+      name,
+      price,
+      Code,
+      images,
+      isFeatured,
+      isArchived,
+      category,
+      brand,
+      model,
+      stock,
+      year,
+    } = body as Partial<Product> & { Code?: string };
+
+    if (!name) return new NextResponse("Category Name Missing", { status: 400 });
+    if (!images || !images.length)
+      return new NextResponse("Images missing Missing", { status: 400 });
+    if (price === undefined)
+      return new NextResponse("No price specified", { status: 400 });
+    if (!category) return new NextResponse("No category selected", { status: 400 });
+    if (!Code) return new NextResponse("No OEM specified", { status: 400 });
+    if (year === undefined) return new NextResponse("No year specified", { status: 400 });
+
+    // Ownership check
+    const storeDoc = await adminDb.collection("stores").doc(storeId).get();
+    if (!storeDoc.exists) return new NextResponse("Store not found", { status: 404 });
+    const storeData = storeDoc.data() as { userId?: string };
+    if (storeData?.userId !== userId)
+      return new NextResponse("Unauthorized Access", { status: 403 });
+
+    const productsCol = adminDb
+      .collection("stores")
+      .doc(storeId)
+      .collection("products");
+
+    const newDocRef = await productsCol.add({
+      name,
+      price,
+      Code,
+      images,
+      isFeatured: !!isFeatured,
+      isArchived: !!isArchived,
+      category,
+      brand,
+      model,
+      stock,
+      year,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    const id = newDocRef.id;
+    await newDocRef.update({ id, updatedAt: FieldValue.serverTimestamp() });
+
+    const saved = (await newDocRef.get()).data();
+    return NextResponse.json(saved);
+  } catch (error) {
+    console.log(`PRODUCTS_POST:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 };
 
-
-export const GET = async (reQ: Request,
-    {params} : {params: {storeId: string}}
+export const GET = async (
+  req: Request,
+  { params }: { params: { storeId: string } }
 ) => {
-    try {
+  try {
+    const { storeId } = params;
+    if (!storeId) return new NextResponse("No store selected", { status: 400 });
 
-        if(!params.storeId){
-            return new NextResponse("No store selected", {status: 400})
-        }
+    const { searchParams } = new URL(req.url);
+    let q: FirebaseFirestore.Query = adminDb
+      .collection("stores")
+      .doc(storeId)
+      .collection("products");
 
-        //get search params from the url
-        const {searchParams} = new URL(reQ.url)
+    const pushWhere = (field: string, value: any) => {
+      q = q.where(field, "==", value);
+    };
 
-        const productRef = collection(doc(db, "stores", params.storeId), "products");
+    if (searchParams.has("industry")) pushWhere("industry", searchParams.get("industry"));
+    if (searchParams.has("category")) pushWhere("category", searchParams.get("category"));
+    if (searchParams.has("brand")) pushWhere("brand", searchParams.get("brand"));
+    if (searchParams.has("model")) pushWhere("model", searchParams.get("model"));
+    if (searchParams.has("isFeatured")) pushWhere("isFeatured", searchParams.get("isFeatured") === "true");
+    if (searchParams.has("isArchived")) pushWhere("isArchived", searchParams.get("isArchived") === "true");
 
-        let productQuery;
-
-        let queryConstraints = []
-
-        //construct query
-        if(searchParams.has("industry")){
-            queryConstraints.push(where("industry", "==", searchParams.get("industry")))
-        }
-        if(searchParams.has("category")){
-            queryConstraints.push(where("category", "==", searchParams.get("category")))
-        }
-        if(searchParams.has("brand")){
-            queryConstraints.push(where("brand", "==", searchParams.get("brand")))
-        }
-        if(searchParams.has("model")){
-            queryConstraints.push(where("model", "==", searchParams.get("model")))
-        }
-        if(searchParams.has("isFeatured")){
-            queryConstraints.push(where("isFeatured", "==",
-                 searchParams.get("isFeatured") === "true" ? true : false))
-        }
-
-        if(searchParams.has("isArchived")){
-            queryConstraints.push(where("isArchived", "==",
-                 searchParams.get("isArchived") === "true" ? true : false))
-        }
-
-        if(queryConstraints.length > 0){
-            productQuery = query(productRef, and(...queryConstraints))
-        }else{
-            productQuery = query(productRef);
-        }
-
-        const querySnapshot = await getDocs(productQuery)
-
-        const productData : Product[] = querySnapshot.docs.map(doc => doc.data() as Product);
-
-        return NextResponse.json(productData);
-    
-    
-    }
-   
-
- catch (error) {
-    console.log(`PRODUCTS_GET:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
+    const snap = await q.get();
+    const products = snap.docs.map(d => d.data() as Product);
+    return NextResponse.json(products);
+  } catch (error) {
+    console.log(`PRODUCTS_GET:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 };
 
-
-
-export const runtime = 'nodejs';
+export const runtime = "nodejs";

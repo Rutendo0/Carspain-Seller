@@ -8,20 +8,18 @@ import { it } from "node:test";
 import { formatter } from "@/lib/utils";
 import emailjs from 'emailjs-com';
 import { adminAuth } from "@/lib/firebase-admin";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import toast from "react-hot-toast";
 
 const ProductsPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
   const { storeId } = await params;
 
-    const ProductsData = (
-        await getDocs(
-          query(
-            collection(doc(db, "stores", storeId), "products"),
-            limit(20) // Limits the number of records to 20
-          )
-        )
-      ).docs.map(doc => doc.data()) as Product[];
+    const h = headers();
+    const host = h.get('x-forwarded-host') ?? h.get('host');
+    const proto = h.get('x-forwarded-proto') ?? 'http';
+    const base = process.env.NEXT_PUBLIC_BASE_URL || (host ? `${proto}://${host}` : '');
+    const apiRes = await fetch(`${base}/api/${storeId}/products`, { cache: 'no-store' });
+    const ProductsData = (await apiRes.json()) as Product[];
 
     const cookieStore = await cookies()
     const token = cookieStore.get('__session')?.value

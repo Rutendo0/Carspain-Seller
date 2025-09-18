@@ -121,7 +121,7 @@ const ReturnsPage = ({ initialData, storeId }: ReturnsPageProps) => {
     
     try {
       setLoading(true);
-      const response = await fetch(`/api/returns/${selectedReturn.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/returns/${selectedReturn.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ const ReturnsPage = ({ initialData, storeId }: ReturnsPageProps) => {
   const refreshReturns = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/returns/${storeId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/returns?storeId=${storeId}`);
       const data = await response.json();
       setReturns(data);
     } catch (error) {

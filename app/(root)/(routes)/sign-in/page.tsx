@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import { Eye, EyeOff } from "lucide-react"
-import { signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
+import { signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -41,11 +41,6 @@ export default function SignInPage() {
     },
   })
 
-  useEffect(() => {
-    if (user) {
-      router.push("/")
-    }
-  }, [user, router])
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true)
@@ -53,7 +48,7 @@ export default function SignInPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password)
       const idToken = await userCredential.user.getIdToken()
-      
+
       const sessionResponse = await fetch('/api/auth/set-session', {
         method: 'POST',
         headers: {
@@ -71,6 +66,7 @@ export default function SignInPage() {
       await new Promise((r) => setTimeout(r, 50))
 
       toast.success("Signed in successfully!")
+
       router.replace("/")
     } catch (error: any) {
       if (error.code === "auth/user-not-found") {

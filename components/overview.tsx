@@ -11,18 +11,19 @@ const Overview = ({data}: OverviewProps) => {
             <BarChart data={data}>
                 <XAxis
                 dataKey={"name"}
-                stroke="#555"
+                stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}/>
                 <YAxis 
-                tickFormatter={(v)=>`$: ${v}`}
-                stroke="#555"
+                tickFormatter={(v)=>`$${v}`}
+                stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}/>
 
-                <Bar dataKey={"total"} fill="#5a69f3" radius={[4,4,0,0]}/>
+                {/* Use theme primary for bars */}
+                <Bar dataKey={"total"} fill="hsl(var(--primary))" radius={[4,4,0,0]}/>
             </BarChart>
         </ResponsiveContainer>
     )

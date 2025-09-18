@@ -1,15 +1,15 @@
-import { adminAuth } from "@/lib/firebase-admin";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  params: Promise<{ storeId: string }>;
+  params: { storeId: string };
 }
 
 const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
-  const { storeId } = await params;
+  const { storeId } = params;
   const cookieStore = await cookies();
   const token = cookieStore.get("__session")?.value;
 
@@ -25,28 +25,18 @@ const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
       redirect("/sign-in");
     }
 
-    if (!decodedToken.email_verified) {
-      redirect("/sign-in?verify=true");
-    }
+    // Optional: enforce verified emails only if your flow requires it
+    // if (!decodedToken.email_verified) {
+    //   redirect("/sign-in?verify=true");
+    // }
 
-    // Read mock store data from cookie written by /api/stores
-    const storeDataJson = cookieStore.get("storeData")?.value;
-    if (!storeDataJson) {
+    // Validate store ownership directly from Firestore
+    const doc = await adminDb.collection('stores').doc(storeId).get();
+    if (!doc.exists) {
       redirect("/");
     }
-
-    let storeData: any;
-    try {
-      storeData = JSON.parse(storeDataJson!);
-    } catch {
-      redirect("/");
-    }
-
-    if (!storeData?.id || storeData.id !== storeId) {
-      redirect("/");
-    }
-
-    if (storeData.userId !== userId) {
+    const store = doc.data() as { userId?: string } | undefined;
+    if (!store || store.userId !== userId) {
       redirect("/");
     }
   } catch (error) {

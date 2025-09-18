@@ -1,189 +1,95 @@
-import { db } from "@/lib/firebase";
-import {  Order } from "@/types-db";
-import { adminAuth } from "@/lib/firebase-admin";
-import { cookies } from "next/headers";
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { NextResponse } from "next/server";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { cookies } from "next/headers";
+import { Order } from "@/types-db";
 
-
-export const GET = async (reQ: Request,
-    {params} : {params: {orderId : string}}
+export const GET = async (
+  _req: Request,
+  { params }: { params: { orderId: string } }
 ) => {
-    try {
+  try {
+    const { orderId } = params;
+    if (!orderId) return new NextResponse("Order ID required", { status: 400 });
 
-
-
-        const storesSnapshot = await getDocs(collection(db, "stores"));
-        const storeIds = storesSnapshot.docs.map(doc => doc.id);
-
-        // Step 2: Fetch orders for each store
-        let allOrders : Order = {} as Order;
-        for (const storeId of storeIds) {
-
-            const ordersRef = collection(db, "stores", storeId, "orders");
-            const q = query(ordersRef,  where("id", "==", params.orderId));
-
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                if(doc.exists()){
-                    allOrders = doc.data() as Order;
-                }
-            });
-
-        }
-    
-        return NextResponse.json(allOrders)
-    
-    
+    // Search across all stores with Admin SDK
+    const storesSnap = await adminDb.collection("stores").get();
+    let found: Order | null = null;
+    for (const storeDoc of storesSnap.docs) {
+      const snap = await adminDb
+        .collection("stores").doc(storeDoc.id)
+        .collection("orders").where("id", "==", orderId).limit(1).get();
+      if (!snap.empty) {
+        found = snap.docs[0].data() as Order;
+        break;
+      }
     }
-   
-
- catch (error) {
-    console.log(`ORDERS_GET:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
+    return NextResponse.json(found);
+  } catch (error) {
+    console.log(`ORDERS_SINGLE_GET:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 };
 
-
-
-
-
-export const PATCH = async (reQ: Request,
-    {params} : {params: { orderId : string}}
+export const PATCH = async (
+  req: Request,
+  { params }: { params: { orderId: string } }
 ) => {
-    try {
-        const cookieStore = cookies()
-        const token = cookieStore.get('__session')?.value
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("__session")?.value;
+    if (!token) return new NextResponse("Unauthorized", { status: 401 });
 
-        if (!token) {
-          return new NextResponse("Unauthorized", {status: 401})
-        }
+    try { await adminAuth.verifyIdToken(token); } catch { return new NextResponse("Unauthorized", { status: 401 }); }
 
-        let userId
-        try {
-          const decodedToken = await adminAuth.verifyIdToken(token)
-          userId = decodedToken.uid
-        } catch (error) {
-          return new NextResponse("Unauthorized", {status: 401})
-        }
+    const { order_status, store_id } = await req.json();
+    if (!order_status || !store_id) return new NextResponse("Invalid body", { status: 400 });
 
-        if(!userId){
-            return new NextResponse("Unauthorized", {status: 400})
-        }
+    const orderDoc = await adminDb
+      .collection("stores").doc(store_id)
+      .collection("orders").doc(params.orderId).get();
 
-        const body = await reQ.json()
-        const {order_status, store_id} = body;
+    if (!orderDoc.exists) return new NextResponse("Order not found", { status: 404 });
 
-        console.log(order_status, store_id)
-    
-    
-        if(!order_status){
-            return new NextResponse("Order Gone Missing", {status: 400})
-        }
+    await adminDb
+      .collection("stores").doc(store_id)
+      .collection("orders").doc(params.orderId)
+      .update({ order_status });
 
+    const updated = (await adminDb
+      .collection("stores").doc(store_id)
+      .collection("orders").doc(params.orderId).get()).data() as Order;
 
-
-        if(!params.orderId){
-            return new NextResponse("No order specified", {status: 400})
-        }
-
-
-     const orderRef = await getDocs(
-        collection(db, "stores", store_id, "orders")
-     )
-
-
-
-     if(!orderRef.empty){
-        
-  
-        // await updateDoc(
-        //     doc(db, "stores", store_id, "orders", params.orderId), {
-        //         ...orderRef.data(),
-        //         order_status,
-        //         updatedAt: serverTimestamp(),
-        //     }
-        // )
-     }else{
-        return new NextResponse("Order not found!", {status: 404})
-     }
-
-     const order = (
-        await getDoc(
-            doc(db, "stores", store_id, "orders", params.orderId)
-        )
-     ).data() as Order;
-
-
-    return NextResponse.json(order);
-    
-    
-    }
-   
-
- catch (error) {
-    console.log(`ORDER_PATCH:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.log(`ORDER_PATCH:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 };
 
-
-
-
-export const DELETE = async (reQ: Request,
-    {params} : {params: {orderId : string}}
+export const DELETE = async (
+  _req: Request,
+  { params }: { params: { orderId: string } }
 ) => {
-    try {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("__session")?.value;
+    if (!token) return new NextResponse("Unauthorized", { status: 401 });
+    try { await adminAuth.verifyIdToken(token); } catch { return new NextResponse("Unauthorized", { status: 401 }); }
 
-        console.log("Arrival!!!!!!")
-        const cookieStore = cookies()
-        const token = cookieStore.get('__session')?.value
-
-        if (!token) {
-          return new NextResponse("Unauthorized", {status: 401})
-        }
-
-        let userId
-        try {
-          const decodedToken = await adminAuth.verifyIdToken(token)
-          userId = decodedToken.uid
-        } catch (error) {
-          return new NextResponse("Unauthorized", {status: 401})
-        }
-
-        if(!userId){
-            return new NextResponse("Unauthorized", {status: 400})
-        }
-
-        if(!params.orderId){
-            return new NextResponse("No order selected", {status: 400})
-        }
-  
-        const storesSnapshot = await getDocs(collection(db, "stores"));
-        const storeIds = storesSnapshot.docs.map(doc => doc.id);
-        
-        for (const storeId of storeIds) {
-            const store = await getDoc(doc(db, "stores", storeId, "orders", params.orderId))
-
-            if(store.exists()){
-                const orderRef = doc(db, "stores", storeId, "orders", params.orderId)
-                await deleteDoc(orderRef);
-
-            }
-        }
-        return NextResponse.json({msg: "order Deleted"});
-    
-    
+    const storesSnap = await adminDb.collection("stores").get();
+    for (const storeDoc of storesSnap.docs) {
+      const ref = adminDb
+        .collection("stores").doc(storeDoc.id)
+        .collection("orders").doc(params.orderId);
+      const docSnap = await ref.get();
+      if (docSnap.exists) await ref.delete();
     }
-   
 
- catch (error) {
-    console.log(`order_DELETE:${error}`);
-    return new NextResponse("Internal Server Error", {status : 500})
-}
+    return NextResponse.json({ msg: "order Deleted" });
+  } catch (error) {
+    console.log(`order_DELETE:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 };
-
-
-
 
 export const runtime = 'nodejs';

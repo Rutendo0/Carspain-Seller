@@ -34,6 +34,11 @@ export const MainNav = ({className, ...props}: React.HtmlHTMLAttributes<HTMLElem
             label: "Returns",
             active: pathname === `/${params.storeId}/returns`,
         },
+        {
+            href: `/${params.storeId}/profile`,
+            label: "My Profile",
+            active: pathname === `/${params.storeId}/profile`,
+        },
     ];
 
 
@@ -45,7 +50,7 @@ export const MainNav = ({className, ...props}: React.HtmlHTMLAttributes<HTMLElem
             href={route.href}
             className={cn(
                 "text-sm font-medium transition-colors hover:text-primary",
-                route.active ? "text-black dark:text-white"
+                route.active ? "text-primary border-b-2 border-[hsl(var(--primary))] pb-1"
                 : "text-muted-foreground"
             )}
             >{route.label}</Link>

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 const serviceAccount = {
   type: "service_account",
@@ -15,11 +16,15 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
 };
 
+const rawBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
 if (!getApps().length) {
   initializeApp({
     credential: cert(serviceAccount as any),
+    storageBucket: rawBucket,
   });
 }
 
 export const adminDb = getFirestore();
 export const adminAuth = getAuth();
+export const adminStorage = getStorage();

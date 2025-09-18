@@ -13,10 +13,12 @@ const corsHeaders = {
   Vary: "Origin",
 }
 
-export const OPTIONS = async () => NextResponse.json({}, { headers: corsHeaders })
+export const OPTIONS = async () => {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
 
 const BodySchema = z.object({
-  storeId: z.string().min(1),
+  // Preferred shape
   items: z
     .array(
       z.object({
@@ -26,6 +28,7 @@ const BodySchema = z.object({
     )
     .min(1)
     .optional(),
+  // Back-compat shape
   products: z
     .array(
       z.object({
@@ -38,7 +41,10 @@ const BodySchema = z.object({
   userId: z.string().optional(),
 })
 
-export const POST = async (req: Request) => {
+export const POST = async (
+  req: Request,
+  { params }: { params: { storeId: string } }
+) => {
   try {
     const json = await req.json().catch(() => null)
     const parsed = BodySchema.safeParse(json)
@@ -46,18 +52,19 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400, headers: corsHeaders })
     }
 
-    const { storeId, userId } = parsed.data
-    const rawItems = (parsed.data.items ?? parsed.data.products) || []
+    const payload = parsed.data
+    const rawItems = (payload.items ?? payload.products) || []
 
     // Fetch server-trusted product data and build line items securely
     const orderItems: { id: string; name: string; price: number; qty: number }[] = []
 
     for (const { id, qty } of rawItems) {
-      const pSnap = await getDoc(doc(db, "stores", storeId, "products", id))
+      const pSnap = await getDoc(doc(db, "stores", params.storeId, "products", id))
       if (!pSnap.exists()) {
         return NextResponse.json({ error: `Product not found: ${id}` }, { status: 404, headers: corsHeaders })
       }
       const p = pSnap.data() as { name: string; price: number }
+      // Trust price/name only from DB (never from client)
       orderItems.push({ id, name: p.name, price: p.price, qty })
     }
 
@@ -69,15 +76,16 @@ export const POST = async (req: Request) => {
     const order = {
       isPaid: false,
       orderItems,
-      userId: userId || null,
+      userId: payload.userId || null,
       order_status: "Processing" as const,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }
 
-    const orderRef = await addDoc(collection(db, "stores", storeId, "orders"), order)
+    const orderRef = await addDoc(collection(db, "stores", params.storeId, "orders"), order)
     const orderId = orderRef.id
 
+    // Build Stripe line items from server values
     const line_items = orderItems.map((item) => ({
       quantity: item.qty,
       price_data: {
@@ -100,11 +108,12 @@ export const POST = async (req: Request) => {
       cancel_url: cancelUrl,
       metadata: {
         orderId: orderId,
-        storeId: storeId,
+        storeId: params.storeId,
       },
     })
 
-    await updateDoc(doc(db, "stores", storeId, "orders", orderId), {
+    // Keep a pointer to session id/url if you want
+    await updateDoc(doc(db, "stores", params.storeId, "orders", orderId), {
       stripeSessionId: session.id,
       updatedAt: serverTimestamp(),
     })

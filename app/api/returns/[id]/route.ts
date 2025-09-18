@@ -1,7 +1,6 @@
-// app/api/returns/[id]/route.ts
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function PATCH(
   req: Request,
@@ -9,14 +8,11 @@ export async function PATCH(
 ) {
   try {
     const { status } = await req.json();
-    
-    await updateDoc(
-      doc(db, "data", "wModRJCDon6XLQYmnuPT", "returns", params.id),
-      { 
-        status,
-        updatedAt: serverTimestamp() 
-      }
-    );
+
+    await adminDb
+      .collection("data").doc("wModRJCDon6XLQYmnuPT")
+      .collection("returns").doc(params.id)
+      .update({ status, updatedAt: FieldValue.serverTimestamp() });
 
     return NextResponse.json({ success: true });
   } catch (error) {

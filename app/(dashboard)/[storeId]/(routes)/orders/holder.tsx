@@ -21,13 +21,8 @@ const OrdersPage = ({ store_id }: OrdersPageProps) => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const ordersData = (
-                    await getDocs(
-                        query(
-                            collection(doc(db, "stores", store_id), "orders")
-                        )
-                    )
-                ).docs.map(doc => doc.data()) as Order[];
+                const res = await fetch(`/api/${store_id}/orders`, { cache: 'no-store' });
+                const ordersData = (await res.json()) as Order[];
 
                 const formattedOrders: OrderColumns[] = ordersData.map(
                     item => ({
@@ -47,7 +42,7 @@ const OrdersPage = ({ store_id }: OrdersPageProps) => {
                         ),
                         approved: item.approved,
                         store_id: item.store_id,
-                        images: item.orderItems.map(item => item.images[0].url),
+                        images: item.orderItems.map(item => item.images[0]?.url).filter(Boolean),
                         createdAt: item.createdAt ? format(item.createdAt.toDate(), "MMMM dd, yyyy") : ""
                     })
                 );

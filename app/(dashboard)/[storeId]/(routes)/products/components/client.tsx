@@ -120,9 +120,13 @@ export const ProductClient = ({ data, email, uname }: ProductClientProps) => {
       <Separator />
       <DataTable columns={columns} data={data} searchKey="name" />
 
-      <Heading title="API" description="API calls for products" />
-      <Separator />
-      <ApiList entityName="products" entityId="productId" />
+      {process.env.NEXT_PUBLIC_SHOW_API_DOCS === 'true' && (
+        <>
+          <Heading title="API" description="API calls for products" />
+          <Separator />
+          <ApiList entityName="products" entityId="productId" />
+        </>
+      )}
 
       {/* Popup for selecting make and year */}
       <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
